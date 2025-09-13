@@ -7,10 +7,17 @@ import '../models/user_model.dart';
 
 
 class AuthService {
-  final fb.FirebaseAuth _auth = fb.FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  // Use the singleton instance per google_sign_in 7.x API
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final fb.FirebaseAuth _auth;
+  final dynamic _firestore;
+  // Use the singleton instance per google_sign_in 7.x API by default
+  final GoogleSignIn _googleSignIn;
+
+  /// Allows optional dependency injection for easier testing.
+  /// If a dependency is not provided, the singleton instance is used.
+  AuthService({fb.FirebaseAuth? auth, Object? firestore, GoogleSignIn? googleSignIn})
+      : _auth = auth ?? fb.FirebaseAuth.instance,
+        _firestore = firestore ?? FirebaseFirestore.instance,
+        _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
 
   // Register with Email/Password
   Future<AppUser?> registerWithEmail(String email, String password, String name) async {
