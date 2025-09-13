@@ -16,7 +16,7 @@ class PPTXParser {
           final document = XmlDocument.parse(xmlContent);
           final textElements = document.findAllElements('a:t', namespace: '*');
           for (final elem in textElements) {
-            allText += '${elem.text} ';
+            allText += '${elem.innerText} ';
           }
         }
       }

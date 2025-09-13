@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'screens/splash_screen.dart';
+import 'screens/auth_screen.dart';
+import 'screens/progress_screen.dart';
+import 'services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,8 +21,43 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MainNavigation(),
+      home: const SplashScreenRouter(),
     );
+  }
+}
+
+class SplashScreenRouter extends StatefulWidget {
+  const SplashScreenRouter({super.key});
+
+  @override
+  State<SplashScreenRouter> createState() => _SplashScreenRouterState();
+}
+
+class _SplashScreenRouterState extends State<SplashScreenRouter> {
+  bool _showSplash = true;
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 2), () {
+      final user = AuthService().currentUser;
+      setState(() {
+        _showSplash = false;
+        _isLoggedIn = user != null;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showSplash) {
+      return const SplashScreen();
+    } else if (_isLoggedIn) {
+      return const MainNavigation();
+    } else {
+      return const AuthScreen();
+    }
   }
 }
 
@@ -33,19 +72,14 @@ class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
   static final List<Widget> _screens = <Widget>[
-    HomeScreen(),
-    CreatePlanScreen(),
-    FlashcardsScreen(),
-    ExamScreen(),
-    PublicPlansScreen(),
-    SettingsScreen(),
+    const HomeScreen(),
+    const CreatePlanScreen(),
+    const FlashcardsScreen(),
+    const ExamScreen(),
+    const ProgressScreen(),
+    const PublicPlansScreen(),
+    const SettingsScreen(),
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,11 +92,16 @@ class _MainNavigationState extends State<MainNavigation> {
           BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Create'),
           BottomNavigationBarItem(icon: Icon(Icons.style), label: 'Flashcards'),
           BottomNavigationBarItem(icon: Icon(Icons.quiz), label: 'Exam'),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Progress'),
           BottomNavigationBarItem(icon: Icon(Icons.public), label: 'Public'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap: (int index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
       ),
     );
   }
