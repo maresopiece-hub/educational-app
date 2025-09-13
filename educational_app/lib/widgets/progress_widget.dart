@@ -3,7 +3,7 @@ import '../services/database_service.dart';
 
 class ProgressWidget extends StatefulWidget {
   final String userId;
-  const ProgressWidget({Key? key, required this.userId}) : super(key: key);
+  const ProgressWidget({super.key, required this.userId});
 
   @override
   State<ProgressWidget> createState() => _ProgressWidgetState();

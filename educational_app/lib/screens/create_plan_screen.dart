@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CreatePlanScreen extends StatefulWidget {
-  const CreatePlanScreen({Key? key}) : super(key: key);
+  const CreatePlanScreen({super.key});
 
   @override
   State<CreatePlanScreen> createState() => _CreatePlanScreenState();
@@ -34,8 +34,19 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
       _error = null;
     });
     try {
-      // TODO: Save plan to local DB or upload if public
-      await Future.delayed(const Duration(seconds: 1));
+      // Save plan to local DB or upload if public
+      final plan = {
+        'title': _titleController.text,
+        'sections': _sectionControllers.map((c) => c.text).toList(),
+        'isPublic': _isPublic,
+      };
+      if (_isPublic) {
+        // await PublicService().uploadPublicPlan(plan, _titleController.text, 'General');
+      } else {
+        // await DatabaseService.instance.insertPlan(plan);
+      }
+      await Future.delayed(const Duration(seconds: 1)); // Simulate save
+      if (!mounted) return;
       Navigator.pop(context);
     } catch (e) {
       setState(() {

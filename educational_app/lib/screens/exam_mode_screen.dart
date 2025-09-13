@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ExamModeScreen extends StatefulWidget {
-  const ExamModeScreen({Key? key}) : super(key: key);
+  const ExamModeScreen({super.key});
 
   @override
   State<ExamModeScreen> createState() => _ExamModeScreenState();
@@ -88,6 +88,7 @@ class _ExamModeScreenState extends State<ExamModeScreen> {
                   const SizedBox(height: 16),
                   Text(_questions[_current]['question'], style: Theme.of(context).textTheme.bodyLarge),
                   const SizedBox(height: 24),
+                  // TODO: Migrate to RadioGroup when available in your Flutter version
                   ...(_questions[_current]['options'] as List<String>).map((opt) => RadioListTile<String>(
                         value: opt,
                         groupValue: _selected,

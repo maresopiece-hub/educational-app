@@ -3,7 +3,7 @@ import '../widgets/progress_widget.dart';
 import '../widgets/motivational_popup.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

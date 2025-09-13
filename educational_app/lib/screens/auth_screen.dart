@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -116,7 +115,7 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Color(0x4D000000), // 30% opacity black
               child: const Center(child: CircularProgressIndicator()),
             ),
         ],

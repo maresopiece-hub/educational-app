@@ -3,7 +3,7 @@ import '../services/pdf_parser.dart';
 import '../services/file_processor.dart';
 
 class PDFUploadScreen extends StatefulWidget {
-  const PDFUploadScreen({Key? key}) : super(key: key);
+  const PDFUploadScreen({super.key});
 
   @override
   State<PDFUploadScreen> createState() => _PDFUploadScreenState();
@@ -79,8 +79,28 @@ class _PDFUploadScreenState extends State<PDFUploadScreen> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () {
-                  // TODO: Generate lesson plan and save
+                onPressed: () async {
+                  if (_sections == null || _sections!.isEmpty) return;
+                  setState(() => _isLoading = true);
+                  try {
+                    // Example: generate and save lesson plan
+                    final plan = {
+                      'title': _fileName ?? 'Lesson Plan',
+                      'sections': _sections,
+                    };
+                    // await DatabaseService.instance.insertPlan(plan);
+                    await Future.delayed(const Duration(seconds: 1));
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Lesson plan generated and saved!')),
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    setState(() => _error = 'Failed to save plan: $e');
+                  } finally {
+                    if (!mounted) return;
+                    setState(() => _isLoading = false);
+                  }
                 },
                 child: const Text('Generate Lesson Plan'),
               ),

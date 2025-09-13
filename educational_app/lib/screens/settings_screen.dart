@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../theme/theme_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -25,7 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSettings() async {
     setState(() => _loading = true);
     final prefs = await SharedPreferences.getInstance();
-    final colorValue = prefs.getInt('themeColor') ?? Colors.blue.value;
+  final colorValue = prefs.getInt('themeColor') ?? Colors.blue.value;
     final hour = prefs.getInt('studyHour') ?? 18;
     final minute = prefs.getInt('studyMinute') ?? 0;
     final notif = prefs.getBool('notifications') ?? true;
@@ -43,7 +43,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await prefs.setInt('studyMinute', _studyTime.minute);
     await prefs.setBool('notifications', _notificationsEnabled);
     // Update theme color via provider
-    Provider.of<ThemeProvider>(context, listen: false).setColor(_selectedColor);
+  Provider.of<ThemeProvider>(context, listen: false).setColor(_selectedColor);
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Settings saved!')));
   }
 

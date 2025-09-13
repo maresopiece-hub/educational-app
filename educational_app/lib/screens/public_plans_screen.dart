@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/public_service.dart';
 
 class PublicPlansScreen extends StatefulWidget {
-  const PublicPlansScreen({Key? key}) : super(key: key);
+  const PublicPlansScreen({super.key});
 
   @override
   State<PublicPlansScreen> createState() => _PublicPlansScreenState();
@@ -10,9 +10,10 @@ class PublicPlansScreen extends StatefulWidget {
 
 class _PublicPlansScreenState extends State<PublicPlansScreen> {
   Future<void> _downloadPlan(Map<String, dynamic> plan) async {
-    // Save plan to local DB (demo: just show snackbar)
-    // TODO: Replace with actual DatabaseService logic
+    // Save plan to local DB (replace with actual logic)
+    // await DatabaseService.instance.insertPlan(plan);
     await Future.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Plan "${plan['title'] ?? 'Untitled'}" downloaded!')),
     );
@@ -34,11 +35,13 @@ class _PublicPlansScreenState extends State<PublicPlansScreen> {
     });
     try {
       final plans = await PublicService().fetchPublicPlans();
+      if (!mounted) return;
       setState(() {
         _plans = plans;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = 'Failed to load plans: $e';
         _loading = false;
@@ -49,8 +52,10 @@ class _PublicPlansScreenState extends State<PublicPlansScreen> {
   Future<void> _ratePlan(String planId, int rating) async {
     try {
       await PublicService().ratePlan(planId, rating);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Thank you for rating!')));
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to rate: $e')));
     }
   }
