@@ -1,7 +1,13 @@
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:educational_app/services/database_service.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
   group('DatabaseService', () {
     test('insert and get user', () async {
       final db = DatabaseService.instance;
