@@ -53,10 +53,10 @@ packages:
     dependency: "direct main"
     description:
       name: awesome_notifications
-      sha256: d9e46ce7f5171ee1e9b1c5bc6dc40bd77528561f592842ce97ce3a0a9ae155ef
+      sha256: "0d5fa4457f2ba4e536adc3ef6af709cdcecf4a05a1f3035981e9afa2f899b2a8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.3+1"
+    version: "0.10.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -322,10 +322,10 @@ packages:
     dependency: "direct dev"
     description:
       name: flutter_lints
-      sha256: "5398f14efa795ffb7a33e9b6a08798b26a180edac4ad7db3f231e40f82ce11e1"
+      sha256: "3105dc8492f6183fb076ccf1f351ac3d60564bff92e20bfc4af9cc1651f4e7e1"
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.0"
+    version: "6.0.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -428,42 +428,42 @@ packages:
     dependency: "direct main"
     description:
       name: google_sign_in
-      sha256: d0a2c3bcb06e607bb11e4daca48bd4b6120f0bbc4015ccebbe757d24ea60ed2a
+      sha256: "939a8b58f84c4053811b8c1bc9adbcb59449a15b37958264bbf60020698cca0e"
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.0"
+    version: "7.1.1"
   google_sign_in_android:
     dependency: transitive
     description:
       name: google_sign_in_android
-      sha256: d5e23c56a4b84b6427552f1cf3f98f716db3b1d1a647f16b96dbb5b93afa2805
+      sha256: "666c3a133f5ec4256f08884359dc34788778d96a378d804203bc57a73ffbd9c0"
       url: "https://pub.dev"
     source: hosted
-    version: "6.2.1"
+    version: "7.0.5"
   google_sign_in_ios:
     dependency: transitive
     description:
       name: google_sign_in_ios
-      sha256: "102005f498ce18442e7158f6791033bbc15ad2dcc0afa4cf4752e2722a516c96"
+      sha256: c7ee744ebbcd98353966dbdee735d4fca085226f6bf725c6bea8a5c8fe0055bc
       url: "https://pub.dev"
     source: hosted
-    version: "5.9.0"
+    version: "6.1.0"
   google_sign_in_platform_interface:
     dependency: transitive
     description:
       name: google_sign_in_platform_interface
-      sha256: "5f6f79cf139c197261adb6ac024577518ae48fdff8e53205c5373b5f6430a8aa"
+      sha256: "7f59208c42b415a3cca203571128d6f84f885fead2d5b53eb65a9e27f2965bb5"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.0"
+    version: "3.1.0"
   google_sign_in_web:
     dependency: transitive
     description:
       name: google_sign_in_web
-      sha256: "460547beb4962b7623ac0fb8122d6b8268c951cf0b646dd150d60498430e4ded"
+      sha256: "09ac306b2787b48f19c857b9f93375b654f774643c75bd6a1a078c85f4f7b468"
       url: "https://pub.dev"
     source: hosted
-    version: "0.12.4+4"
+    version: "1.0.0"
   graphs:
     dependency: transitive
     description:
@@ -500,10 +500,10 @@ packages:
     dependency: "direct main"
     description:
       name: intl
-      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
+      sha256: "3df61194eb431efc39c4ceba583b95633a403f46c9fd341e550ce0bfa50e9aa5"
       url: "https://pub.dev"
     source: hosted
-    version: "0.19.0"
+    version: "0.20.2"
   io:
     dependency: transitive
     description:
@@ -564,10 +564,10 @@ packages:
     dependency: transitive
     description:
       name: lints
-      sha256: c35bb79562d980e9a453fc715854e1ed39e24e7d0297a880ef54e17f9874a9d7
+      sha256: a5e2b223cb7c9c8efdc663ef484fdd95bb243bff242ef5b13e26883547fce9a0
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.1"
+    version: "6.0.0"
   logging:
     dependency: transitive
     description:
@@ -985,18 +985,18 @@ packages:
     dependency: transitive
     description:
       name: syncfusion_flutter_core
-      sha256: "6e67726b85812afc7105725a23620b876ab7f6b04b8410e211330ffb8c2cdbe8"
+      sha256: "2d878bce96c4fd1092205a4f72b328f7f05d86b27c3bd55db7fd440e6017352a"
       url: "https://pub.dev"
     source: hosted
-    version: "26.2.14"
+    version: "31.1.19"
   syncfusion_flutter_pdf:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_pdf
-      sha256: "59a1173dc34a1fac0a41aff7a2bb6f3c1578f1bfd749ea8b24379018434ba5a5"
+      sha256: "95b5e01cc2305f03490b009a28c2e8753feecdb4202c87fcba27a74fbc93222c"
       url: "https://pub.dev"
     source: hosted
-    version: "26.2.14"
+    version: "31.1.19"
   synchronized:
     dependency: transitive
     description:

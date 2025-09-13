@@ -34,16 +34,15 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
       _error = null;
     });
     try {
-      // Save plan to local DB or upload if public
-      final plan = {
-        'title': _titleController.text,
-        'sections': _sectionControllers.map((c) => c.text).toList(),
-        'isPublic': _isPublic,
-      };
+      // final planData = {
+      //   'title': _titleController.text,
+      //   'sections': _sectionControllers.map((c) => c.text).toList(),
+      //   'isPublic': _isPublic,
+      // };
       if (_isPublic) {
-        // await PublicService().uploadPublicPlan(plan, _titleController.text, 'General');
+        // await PublicService().uploadPublicPlan(planData, _titleController.text, 'General');
       } else {
-        // await DatabaseService.instance.insertPlan(plan);
+        // await DatabaseService.instance.insertPlan(planData);
       }
       await Future.delayed(const Duration(seconds: 1)); // Simulate save
       if (!mounted) return;

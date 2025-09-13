@@ -24,13 +24,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadSettings() async {
     setState(() => _loading = true);
+    // Compute default packed color without awaiting or depending on context
+    final themeColor = Provider.of<ThemeProvider>(context, listen: false).color;
+    final defaultPacked = ((themeColor.a * 255.0).round() & 0xFF) << 24 |
+        ((themeColor.r * 255.0).round() & 0xFF) << 16 |
+        ((themeColor.g * 255.0).round() & 0xFF) << 8 |
+        ((themeColor.b * 255.0).round() & 0xFF);
     final prefs = await SharedPreferences.getInstance();
-  final colorValue = prefs.getInt('themeColor') ?? Colors.blue.value;
+    // themeColor is stored as packed ARGB int
+    final colorValue = prefs.getInt('themeColor') ?? defaultPacked;
     final hour = prefs.getInt('studyHour') ?? 18;
     final minute = prefs.getInt('studyMinute') ?? 0;
     final notif = prefs.getBool('notifications') ?? true;
     setState(() {
-      _selectedColor = Color(colorValue);
+      // Unpack into components
+  final a = (colorValue >> 24) & 0xFF;
+  final r = (colorValue >> 16) & 0xFF;
+  final g = (colorValue >> 8) & 0xFF;
+  final b = colorValue & 0xFF;
+  _selectedColor = Color.fromARGB(a, r, g, b);
       _studyTime = TimeOfDay(hour: hour, minute: minute);
       _notificationsEnabled = notif;
       _loading = false;
@@ -43,8 +55,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await prefs.setInt('studyMinute', _studyTime.minute);
     await prefs.setBool('notifications', _notificationsEnabled);
     // Update theme color via provider
-  Provider.of<ThemeProvider>(context, listen: false).setColor(_selectedColor);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Settings saved!')));
+    if (mounted) {
+      Provider.of<ThemeProvider>(context, listen: false).setColor(_selectedColor);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Settings saved!')));
+    }
   }
 
   Future<void> _pickColor() async {

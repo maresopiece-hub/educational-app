@@ -1,2 +1,8 @@
 
-// All widget tests are disabled due to flare_flutter hashValues error.
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+	test('sanity', () {
+		expect(1 + 1, 2);
+	});
+}

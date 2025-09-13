@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/database_service.dart';
 
 class FlashcardScreen extends StatefulWidget {
-  const FlashcardScreen({Key? key}) : super(key: key);
+  const FlashcardScreen({super.key});
 
   @override
   State<FlashcardScreen> createState() => _FlashcardScreenState();

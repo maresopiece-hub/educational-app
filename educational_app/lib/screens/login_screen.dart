@@ -29,24 +29,23 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-      if (!mounted) return;
-      if (user != null) {
-        Navigator.pushReplacementNamed(context, '/home', arguments: user);
-      } else {
-        setState(() {
-          _error = 'Invalid email or password.';
-        });
+      if (mounted) {
+        if (user != null) {
+          Navigator.pushReplacementNamed(context, '/home', arguments: user);
+        } else {
+          setState(() {
+            _error = 'Invalid email or password.';
+          });
+        }
       }
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Login failed: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _error = 'Login failed: $e';
+        });
+      }
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -62,24 +61,23 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-      if (!mounted) return;
-      if (user != null) {
-        Navigator.pushReplacementNamed(context, '/home', arguments: user);
-      } else {
-        setState(() {
-          _error = 'Registration failed.';
-        });
+      if (mounted) {
+        if (user != null) {
+          Navigator.pushReplacementNamed(context, '/home', arguments: user);
+        } else {
+          setState(() {
+            _error = 'Registration failed.';
+          });
+        }
       }
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Registration failed: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _error = 'Registration failed: $e';
+        });
+      }
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

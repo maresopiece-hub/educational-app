@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../lib/services/auth_service.dart';
 
 class MockFirebaseAuth extends Mock implements fb.FirebaseAuth {}
 class MockUser extends Mock implements fb.User {}

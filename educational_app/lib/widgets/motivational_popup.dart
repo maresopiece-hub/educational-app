@@ -7,11 +7,11 @@ class MotivationalPopup extends StatelessWidget {
   final VoidCallback? onClose;
 
   const MotivationalPopup({
-    Key? key,
+    super.key,
     required this.message,
     required this.animationAsset,
     this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

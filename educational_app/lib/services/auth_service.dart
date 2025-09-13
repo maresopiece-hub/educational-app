@@ -9,7 +9,8 @@ import '../models/user_model.dart';
 class AuthService {
   final fb.FirebaseAuth _auth = fb.FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  // Use the singleton instance per google_sign_in 7.x API
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   // Register with Email/Password
   Future<AppUser?> registerWithEmail(String email, String password, String name) async {
@@ -43,11 +44,12 @@ class AuthService {
   // Sign in with Google
   Future<AppUser?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      // Use the 7.x authenticate() flow for user-initiated sign-in
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
+      // authenticate() will throw on failure; if it returns, we have an account
+      // The new GoogleSignInAuthentication currently exposes only idToken
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
       final credential = fb.GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
       final userCredential = await _auth.signInWithCredential(credential);
@@ -102,8 +104,8 @@ class AuthService {
 
   // Sign out
   Future<void> signOut() async {
-    await _auth.signOut();
-    await _googleSignIn.signOut();
+  await _auth.signOut();
+  await GoogleSignIn.instance.signOut();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_id');
     await prefs.remove('user_email');

@@ -83,23 +83,26 @@ class _PDFUploadScreenState extends State<PDFUploadScreen> {
                   if (_sections == null || _sections!.isEmpty) return;
                   setState(() => _isLoading = true);
                   try {
+                    // Capture messenger before async gap to avoid using BuildContext after await
+                    final messenger = ScaffoldMessenger.of(context);
                     // Example: generate and save lesson plan
-                    final plan = {
-                      'title': _fileName ?? 'Lesson Plan',
-                      'sections': _sections,
-                    };
+                    // final plan = {
+                    //   'title': _fileName ?? 'Lesson Plan',
+                    //   'sections': _sections,
+                    // };
                     // await DatabaseService.instance.insertPlan(plan);
                     await Future.delayed(const Duration(seconds: 1));
                     if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       const SnackBar(content: Text('Lesson plan generated and saved!')),
                     );
                   } catch (e) {
                     if (!mounted) return;
                     setState(() => _error = 'Failed to save plan: $e');
                   } finally {
-                    if (!mounted) return;
-                    setState(() => _isLoading = false);
+                    if (mounted) {
+                      setState(() => _isLoading = false);
+                    }
                   }
                 },
                 child: const Text('Generate Lesson Plan'),

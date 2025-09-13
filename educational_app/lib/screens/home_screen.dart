@@ -35,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     // Demo: Show motivational popup if streak increases
     Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
       // In real app, fetch streak from DB and compare
       int currentStreak = 7; // Example
       if (currentStreak > _lastStreak) {
@@ -81,16 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
     );
-  }
-
-  Widget _buildProgressCard() {
-    // No longer used
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildStreakCard() {
-    // No longer used
-    return const SizedBox.shrink();
   }
 
   Widget _buildNavButtons() {

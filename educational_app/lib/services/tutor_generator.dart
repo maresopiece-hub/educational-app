@@ -37,7 +37,7 @@ class TutorGenerator {
     int days = (wordCount / (sessionLength * 50)).ceil(); // Rough estimate
     return {
       'days': days,
-      'dailySessions': List.generate(days, (i) => 'Day ${i+1}: Review flashcards & questions (${sessionLength} mins)'),
+      'dailySessions': List.generate(days, (i) => 'Day ${i + 1}: Review flashcards & questions ($sessionLength mins)'),
       'totalTime': days * sessionLength
     };
   }

@@ -11,7 +11,7 @@ class LoadingOverlay extends StatelessWidget {
       children: [
         child,
         if (loading)
-          ModalBarrier(dismissible: false, color: Colors.black.withOpacity(0.3)),
+          ModalBarrier(dismissible: false, color: const Color.fromRGBO(0, 0, 0, 0.3)),
         if (loading)
           const Center(child: CircularProgressIndicator()),
       ],
