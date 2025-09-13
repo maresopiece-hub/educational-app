@@ -45,7 +45,7 @@ class _AuthScreenState extends State<AuthScreen> {
         _showError('Password must be at least 6 characters');
         return;
       }
-      UserModel? user;
+      AppUser? user;
       if (_isLogin) {
         user = await AuthService().signInWithEmail(_emailController.text, _passwordController.text);
       } else {
