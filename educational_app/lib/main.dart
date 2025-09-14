@@ -6,10 +6,11 @@ import 'theme/theme_provider.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/pdf_upload_screen.dart';
-import 'screens/flashcard_screen.dart';
+import 'screens/import_screen.dart';
 import 'screens/exam_mode_screen.dart';
 import 'screens/create_plan_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/study_today_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +42,8 @@ class MyApp extends StatelessWidget {
         '/auth': (context) => const AuthScreen(),
         '/home': (context) => const HomeScreen(),
         '/upload': (context) => const PDFUploadScreen(),
-        '/study': (context) => const FlashcardScreen(),
+  '/import': (context) => const ImportScreen(),
+  '/study': (context) => const StudyTodayScreen(),
         '/exam': (context) => const ExamModeScreen(),
         '/create': (context) => const CreatePlanScreen(),
         '/settings': (context) => const SettingsScreen(),

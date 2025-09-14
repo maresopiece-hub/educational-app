@@ -47,6 +47,8 @@ dependencies:
   path: ^1.9.0
   syncfusion_flutter_pdf: ^31.1.19
   file_picker: ^8.1.2
+  path_provider: ^2.0.15
+  uuid: ^4.5.1
   awesome_notifications: ^0.10.1
   permission_handler: ^11.3.1
   flutter_secure_storage: ^9.2.2
