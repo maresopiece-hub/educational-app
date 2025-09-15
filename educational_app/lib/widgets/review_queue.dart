@@ -38,24 +38,51 @@ class _ReviewQueueState extends State<ReviewQueue> {
             const SizedBox(height: 8),
             Text(card.front, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
-            // Reveal flow: hide answer until user taps Show
-            if (!_revealed) ...[
-              ElevatedButton(
-                onPressed: () => setState(() => _revealed = true),
-                child: const Text('Show answer'),
-              ),
-            ] else ...[
-              Text('Answer: ${card.back}', style: const TextStyle(fontStyle: FontStyle.italic)),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(onPressed: () => _record(2), child: const Text('Hard')),
-                  ElevatedButton(onPressed: () => _record(4), child: const Text('Good')),
-                  ElevatedButton(onPressed: () => _record(5), child: const Text('Easy')),
-                ],
-              )
-            ]
+            // Reveal flow with AnimatedSwitcher and semantics for accessibility
+            // NOTE: consider adding a flip animation and more prominent rating affordances.
+            // NOTE: add localization keys for 'Show answer', 'Hard', 'Good', 'Easy' and add accessibility tests.
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              child: !_revealed
+                  ? Semantics(
+                      key: const ValueKey('show_button'),
+                      button: true,
+                      label: 'Show answer button',
+                      child: ElevatedButton(
+                        onPressed: () => setState(() => _revealed = true),
+                        child: const Text('Show answer'),
+                      ),
+                    )
+                  : Semantics(
+                      key: const ValueKey('answer_and_ratings'),
+                      container: true,
+                      label: 'Answer and rating buttons',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text('Answer: ${card.back}', style: const TextStyle(fontStyle: FontStyle.italic)),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () => _record(2),
+                                child: const Text('Hard'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => _record(4),
+                                child: const Text('Good'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => _record(5),
+                                child: const Text('Easy'),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+            ),
           ],
         ),
       ),

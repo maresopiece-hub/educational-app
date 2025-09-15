@@ -35,7 +35,7 @@ Example 1: For a=3, b=4, c=5.
     // should produce more clusters (less merging) than a low threshold.
     expect(sectionsHigh.length > sectionsLow.length, true, reason: 'Higher merge threshold should produce more clusters');
     // Ensure tokens appear somewhere in the results
-    final allText = sectionsHigh.map((s) => s.text).join('\n') + '\n' + sectionsLow.map((s) => s.text).join('\n');
+    final allText = '${sectionsHigh.map((s) => s.text).join('\n')}\n${sectionsLow.map((s) => s.text).join('\n')}';
     for (final t in tokens) {
       expect(allText.contains(t), true);
     }

@@ -96,7 +96,7 @@ class LessonGeneratorService {
   String _shorten(String text, int maxWords) {
     final words = text.split(RegExp(r'\s+'));
     if (words.length <= maxWords) return text.trim();
-    return words.take(maxWords).join(' ').trim() + '...';
+    return '${words.take(maxWords).join(' ').trim()}...';
   }
 
   List<String> _makeMcqOptions(String correct, List<String> keywords) {

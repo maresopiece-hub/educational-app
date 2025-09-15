@@ -11,6 +11,7 @@ import 'screens/exam_mode_screen.dart';
 import 'screens/create_plan_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/study_today_screen.dart';
+import 'screens/decks_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         '/upload': (context) => const PDFUploadScreen(),
   '/import': (context) => const ImportScreen(),
   '/study': (context) => const StudyTodayScreen(),
+  '/decks': (context) => const DecksScreen(),
         '/exam': (context) => const ExamModeScreen(),
         '/create': (context) => const CreatePlanScreen(),
         '/settings': (context) => const SettingsScreen(),

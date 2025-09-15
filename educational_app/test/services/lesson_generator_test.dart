@@ -11,7 +11,7 @@ void main() {
     expect(plan.sections.length, 1);
     final sec = plan.sections.first;
     expect(sec.questions.length >= 3, true);
-    expect(sec.examples.length >= 1, true);
+    expect(sec.examples.isNotEmpty, true);
     expect(sec.keywords.isNotEmpty, true);
   });
 
