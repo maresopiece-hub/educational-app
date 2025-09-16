@@ -11,7 +11,7 @@ import 'providers/settings_state.dart';
 class InitializationErrorScreen extends StatelessWidget {
   final VoidCallback onRetry;
 
-  const InitializationErrorScreen({Key? key, required this.onRetry}) : super(key: key);
+  const InitializationErrorScreen({super.key, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
