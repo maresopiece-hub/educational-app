@@ -28,6 +28,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> _submit() async {
     setState(() { _loading = true; _error = null; });
+    final navigator = Navigator.of(context);
     bool success = false;
     try {
       final auth = AuthService();
@@ -43,7 +44,7 @@ class _AuthScreenState extends State<AuthScreen> {
       if (mounted) {
         setState(() { _loading = false; });
         if (success) {
-          Navigator.of(context).pushReplacementNamed('/');
+          navigator.pushReplacementNamed('/');
         }
       }
     }
@@ -85,6 +86,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 onPressed: () async {
                   setState(() { _loading = true; _error = null; });
                   bool success = false;
+                  final navigator = Navigator.of(context);
                   try {
                     await AuthService().signInWithGoogle();
                     success = true;
@@ -94,7 +96,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     if (mounted) {
                       setState(() { _loading = false; });
                       if (success) {
-                        Navigator.of(context).pushReplacementNamed('/');
+                        navigator.pushReplacementNamed('/');
                       }
                     }
                   }

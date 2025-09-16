@@ -219,10 +219,9 @@ class _ExamScreenState extends State<ExamScreen> {
               children: [
                 for (final opt in q['options'])
                   ListTile(
-                    leading: Radio<String>(
-                      value: opt,
-                      groupValue: _selected,
-                      onChanged: (val) => setState(() => _selected = val),
+                    leading: Icon(
+                      _selected == opt ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                      color: _selected == opt ? Theme.of(context).colorScheme.primary : null,
                     ),
                     title: Text(opt),
                     onTap: () => setState(() => _selected = opt),

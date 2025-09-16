@@ -23,15 +23,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      final colorString = prefs.getString('primaryColor');
-      _primaryColor = colorString != null ? Color(int.parse(colorString, radix: 16)) : Colors.blue;
+    final colorString = prefs.getString('primaryColor');
+    _primaryColor = colorString != null
+      ? Color(int.parse(colorString, radix: 16))
+      : Colors.blue;
       _darkMode = prefs.getBool('darkMode') ?? false;
     });
   }
 
   Future<void> _saveSettings() async {
     final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('primaryColor', _primaryColor.value.toRadixString(16));
+    // Store color as full ARGB hex string so it can be parsed reliably.
+  await prefs.setString('primaryColor', _primaryColor.toARGB32().toRadixString(16));
     await prefs.setBool('darkMode', _darkMode);
   }
 
