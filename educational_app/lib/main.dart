@@ -15,7 +15,17 @@ import 'screens/decks_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  if (Firebase.apps.isEmpty) {
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      if (e is FirebaseException && e.code == 'duplicate-app') {
+        // If already initialized on the native side, proceed.
+      } else {
+        rethrow;
+      }
+    }
+  }
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),

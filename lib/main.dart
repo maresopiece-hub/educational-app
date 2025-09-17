@@ -41,15 +41,29 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   bool firebaseOk = false;
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    // Prevent duplicate initialization (fires on hot restart or if another
+    // part of the app already initialized Firebase). See https://firebase.
+    // google.com/docs/reference/android/com/google/firebase/FirebaseApp for
+    // background. This avoids the [core/duplicate-app] error.
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
     firebaseOk = true;
   } catch (e, st) {
     // Log to console for debugging; consider reporting to Sentry or similar.
-    if (kDebugMode) {
-      print('Firebase initialization error: $e');
-      print(st);
+    // If the native Android side already initialized Firebase (for example
+    // via the Google Services plugin), the SDK may throw a duplicate-app
+    // error. Treat that as success so the Flutter app continues.
+    if (e is FirebaseException && e.code == 'duplicate-app') {
+      firebaseOk = true;
+      if (kDebugMode) print('Firebase already initialized (duplicate-app) — continuing.');
+    } else {
+      if (kDebugMode) {
+        print('Firebase initialization error: $e');
+        print(st);
+      }
     }
   }
 
@@ -69,7 +83,11 @@ class MyApp extends StatelessWidget {
         onRetry: () async {
           // A simple retry action: try initializing Firebase again and restart the app.
           try {
-            await Firebase.initializeApp();
+            if (Firebase.apps.isEmpty) {
+              await Firebase.initializeApp(
+                options: DefaultFirebaseOptions.currentPlatform,
+              );
+            }
             // If successful, force a rebuild by using Navigator to push replacement.
             // In a larger app you might use better state management to reflect this.
             runApp(const MyApp(firebaseOk: true));

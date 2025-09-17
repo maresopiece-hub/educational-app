@@ -12,7 +12,20 @@
           "package_name": "com.example.grade12_exam_prep_tutor"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "445070976852-tk6ou6hmlr3hm45gdekusaf38c4rfse3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.grade12_exam_prep_tutor",
+            "certificate_hash": "36b887a71f9fa5dea5c159c0df6c8b6dd59d8a56"
+          }
+        },
+        {
+          "client_id": "445070976852-4k2g1ma6tt3hnp6o62im1fig2sgh55u0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBZ0U0dJm73uvWFdb3OPPUflnwbeuYicGI"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "445070976852-4k2g1ma6tt3hnp6o62im1fig2sgh55u0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
