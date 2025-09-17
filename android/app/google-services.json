@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "445070976852",
+    "project_id": "kuraz-app",
+    "storage_bucket": "kuraz-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445070976852:android:67a452cf03a9fff9834ac1",
+        "android_client_info": {
+          "package_name": "com.example.grade12_exam_prep_tutor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZ0U0dJm73uvWFdb3OPPUflnwbeuYicGI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

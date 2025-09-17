@@ -5,6 +5,19 @@ allprojects {
     }
 }
 
+// Add Google Services plugin classpath so android/app can apply it and generate
+// resources from google-services.json
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Google Services Gradle plugin used to process android/app/google-services.json
+        classpath("com.google.gms:google-services:4.4.3")
+    }
+}
+
 val newBuildDir: Directory =
     rootProject.layout.buildDirectory
         .dir("../../build")
