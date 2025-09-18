@@ -12,8 +12,9 @@ import 'package:grade12_exam_prep_tutor/main.dart';
 
 void main() {
   testWidgets('App builds smoke test', (WidgetTester tester) async {
-    // Build the app and ensure it renders a MaterialApp.
-    await tester.pumpWidget(const MyApp(firebaseOk: true));
+  // Build the app using the non-Firebase fallback so the test doesn't need
+  // to initialize Firebase in the test environment.
+  await tester.pumpWidget(const MyApp(firebaseOk: false));
     await tester.pumpAndSettle();
 
     expect(find.byType(MaterialApp), findsOneWidget);

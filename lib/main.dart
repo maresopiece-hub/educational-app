@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'theme/app_theme.dart';
 import 'screens/auth_screen.dart';
-import 'screens/home_dashboard.dart';
+import 'screens/home_dashboard_screen.dart';
+import 'screens/upload_screen.dart';
+import 'screens/plan_builder_screen.dart';
+import 'screens/flashcard_screen.dart';
+import 'screens/exam_screen.dart';
+import 'screens/public_plans_screen.dart';
+import 'screens/progress_screen.dart';
+import 'screens/settings_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'providers/auth_state.dart';
 import 'providers/settings_state.dart';
@@ -118,10 +126,39 @@ class MyApp extends StatelessWidget {
         title: 'Grade12 Exam Prep Tutor',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        initialRoute: '/auth',
+        home: Builder(builder: (context) {
+          // If Firebase initialized at app startup, wire the auth stream. Otherwise
+          // fall back to the local AuthState provider to allow widget tests and
+          // non-Firebase environments to run.
+          if (firebaseOk) {
+            return StreamBuilder(
+              stream: FirebaseAuth.instance.authStateChanges(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(body: Center(child: CircularProgressIndicator()));
+                }
+                if (snapshot.hasData) {
+                  return const HomeDashboard();
+                }
+                return const AuthScreen();
+              },
+            );
+          }
+
+          // Non-Firebase fallback: rely on AuthState provider.
+          final auth = Provider.of<AuthState>(context);
+          return auth.isSignedIn ? const HomeDashboard() : const AuthScreen();
+        }),
         routes: {
           '/auth': (context) => const AuthScreen(),
           '/home': (context) => const HomeDashboard(),
+          '/upload': (context) => const UploadScreen(),
+          '/plan-builder': (context) => const PlanBuilderScreen(),
+          '/flashcards': (context) => const FlashcardScreen(),
+          '/exam': (context) => const ExamScreen(),
+          '/public-plans': (context) => const PublicPlansScreen(),
+          '/progress': (context) => const ProgressScreen(),
+          '/settings': (context) => const SettingsScreen(),
         },
       ),
     );

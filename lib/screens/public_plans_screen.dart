@@ -25,6 +25,7 @@ class PublicPlansScreen extends StatelessWidget {
             itemCount: plans.length,
             itemBuilder: (context, i) {
               final plan = plans[i];
+              final planId = plan['id'] ?? plan['planId'];
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
@@ -43,8 +44,40 @@ class PublicPlansScreen extends StatelessWidget {
                       Text('${plan['raterCount'] ?? 0} ratings'),
                     ],
                   ),
-                  onTap: () {
-                    // TODO: Show plan details, allow download/rate
+                  onTap: () async {
+                    if (planId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Plan id not available for ratings.')));
+                      return;
+                    }
+                    final messenger = ScaffoldMessenger.of(context);
+                    final stars = await showDialog<int>(
+                      context: context,
+                      builder: (ctx) {
+                        int current = 5;
+                        return AlertDialog(
+                          title: const Text('Rate this plan'),
+                          content: StatefulBuilder(builder: (c, setState) {
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(5, (j) {
+                                return IconButton(
+                                  icon: Icon(j < current ? Icons.star : Icons.star_border, color: Colors.amber),
+                                  onPressed: () => setState(() => current = j + 1),
+                                );
+                              }),
+                            );
+                          }),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.of(ctx).pop(null), child: const Text('Cancel')),
+                            ElevatedButton(onPressed: () => Navigator.of(ctx).pop(current), child: const Text('Submit')),
+                          ],
+                        );
+                      },
+                    );
+                    if (stars != null) {
+                      await PublicService().ratePlan(planId, stars);
+                      messenger.showSnackBar(const SnackBar(content: Text('Thanks for rating')));
+                    }
                   },
                 ),
               );
