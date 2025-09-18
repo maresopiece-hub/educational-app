@@ -17,6 +17,8 @@ import 'package:flutter/foundation.dart';
 import 'providers/auth_state.dart';
 import 'providers/settings_state.dart';
 import 'services/notification_service.dart';
+import 'services/local_sync_service.dart';
+import 'services/firebase_auth_service.dart';
 
 class InitializationErrorScreen extends StatelessWidget {
   final VoidCallback onRetry;
@@ -79,10 +81,19 @@ void main() async {
   // Initialize local notification service once Firebase (and platform) are ready.
   if (firebaseOk) {
     try {
-      await NotificationService().init();
+      await DefaultNotificationService().init();
       if (kDebugMode) print('NotificationService initialized');
     } catch (e) {
       if (kDebugMode) print('NotificationService init failed: $e');
+    }
+    // Start connectivity listener for local sync if a user is already signed in.
+    try {
+      final user = AuthService().currentUser;
+      if (user != null) {
+        LocalSyncService().startConnectivityListener(user.uid);
+      }
+    } catch (e) {
+      if (kDebugMode) print('Failed to start LocalSyncService listener: $e');
     }
   }
 

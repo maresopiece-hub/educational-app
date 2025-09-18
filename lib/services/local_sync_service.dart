@@ -5,9 +5,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'notification_service.dart';
 
 class LocalSyncService {
   static const _kPendingKey = 'local_pending_items';
+  static const _kErrorKey = 'sync_errors';
+
+  final Connectivity _connectivity;
+  final NotificationService _notification;
+
+  LocalSyncService({Connectivity? connectivity, NotificationService? notification})
+      : _connectivity = connectivity ?? Connectivity(),
+        _notification = notification ?? DefaultNotificationService();
 
   Future<SharedPreferences> get _prefs async => await SharedPreferences.getInstance();
 
@@ -41,13 +50,23 @@ class LocalSyncService {
   /// This method uses per-item idempotency via a generated id and retries up
   /// to 3 times for transient failures.
   Future<void> syncPending(String userId) async {
-    final connectivity = await Connectivity().checkConnectivity();
+  final connectivity = await _connectivity.checkConnectivity();
     if (connectivity == ConnectivityResult.none) return;
-
     final pending = await _readAllPending();
     if (pending.isEmpty) return;
-
-    final db = FirebaseFirestore.instance;
+    // Try to access Firestore; if it's not initialized (tests), treat as transient
+    // failure: record failed metric and notify user but don't throw.
+    FirebaseFirestore db;
+    try {
+      db = FirebaseFirestore.instance;
+    } catch (e) {
+      final prefs = await _prefs;
+      await prefs.setInt(_kErrorKey, pending.length);
+      try {
+        await _notification.showSimpleNotification(1001, 'Sync failed', 'Sync failed: ${pending.length} errors, retrying...');
+      } catch (_) {}
+      return;
+    }
     final remaining = <Map<String, dynamic>>[];
 
     for (final item in pending) {
@@ -71,17 +90,25 @@ class LocalSyncService {
       }
     }
 
+    final prefs = await _prefs;
     if (remaining.isEmpty) {
       await _clearPending();
+      // reset failure metric
+      await prefs.setInt(_kErrorKey, 0);
     } else {
-      final prefs = await _prefs;
       await prefs.setStringList(_kPendingKey, remaining.map((e) => jsonEncode(e)).toList());
+      final failed = remaining.length;
+      await prefs.setInt(_kErrorKey, failed);
+      // notify user that sync had failures (non-blocking)
+      try {
+        await _notification.showSimpleNotification(1001, 'Sync failed', 'Sync failed: $failed errors, retrying...');
+      } catch (_) {}
     }
   }
 
   /// Listen and auto-sync when connectivity changes to online.
   void startConnectivityListener(String userId) {
-    Connectivity().onConnectivityChanged.listen((result) {
+    _connectivity.onConnectivityChanged.listen((result) {
       if (result != ConnectivityResult.none) {
         syncPending(userId);
       }

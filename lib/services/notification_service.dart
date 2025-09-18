@@ -4,9 +4,16 @@ import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-class NotificationService {
+abstract class NotificationService {
+  Future<void> init();
+  Future<void> showSimpleNotification(int id, String title, String body);
+  Future<void> scheduleNudge(BuildContext context, int progressThreshold, String msg);
+}
+
+class DefaultNotificationService implements NotificationService {
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
 
+  @override
   Future<void> init() async {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings();
@@ -17,16 +24,14 @@ class NotificationService {
     } catch (_) {}
   }
 
+  @override
   Future<void> showSimpleNotification(int id, String title, String body) async {
     const android = AndroidNotificationDetails('default', 'Default', importance: Importance.defaultImportance);
     const ios = DarwinNotificationDetails();
     await _plugin.show(id, title, body, const NotificationDetails(android: android, iOS: ios));
   }
 
-  /// Schedule a daily nudge notification if the user's completion percent is
-  /// below [progressThreshold]. The caller is expected to check the user's
-  /// current percent and only call this when necessary, but this helper will
-  /// schedule a repeating daily notification at 9am local time.
+  @override
   Future<void> scheduleNudge(BuildContext context, int progressThreshold, String msg) async {
     // For simplicity, schedule a daily notification at 09:00 local time.
     final now = tz.TZDateTime.now(tz.local);

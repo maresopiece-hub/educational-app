@@ -67,7 +67,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
       if (!mounted) return;
       if (percent < 50) {
         try {
-          await NotificationService().scheduleNudge(context, 50, 'Review weak topics!');
+          await DefaultNotificationService().scheduleNudge(context, 50, 'Review weak topics!');
         } catch (e) {
           // ignore scheduling errors
         }
