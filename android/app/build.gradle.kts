@@ -15,6 +15,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // Required by some AARs (e.g. flutter_local_notifications) that need
+        // core library desugaring for Java 8+ APIs on older Android toolchains.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -53,4 +56,6 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+    // Enable desugaring implementation
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
