@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'dart:io' show Platform;
 
 class AuthService {
@@ -18,9 +18,9 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       if (e.code == 'wrong-password' || e.code == 'user-not-found') {
         // Known auth errors that the UI can interpret as invalid credentials.
-        print('Auth sign-in failed: ${e.code} - ${e.message}');
+        debugPrint('Auth sign-in failed: ${e.code} - ${e.message}');
       } else {
-        print('Auth sign-in error: ${e.code} - ${e.message}');
+        debugPrint('Auth sign-in error: ${e.code} - ${e.message}');
       }
       return null;
     }
@@ -37,9 +37,9 @@ class AuthService {
       return result.user;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        print('Email is already registered. Try logging in.');
+        debugPrint('Email is already registered. Try logging in.');
       } else {
-        print('Auth register error: ${e.code} - ${e.message}');
+        debugPrint('Auth register error: ${e.code} - ${e.message}');
       }
       return null;
     }

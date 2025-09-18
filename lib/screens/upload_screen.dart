@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../services/file_processor_service.dart';
 
 class UploadScreen extends StatefulWidget {
