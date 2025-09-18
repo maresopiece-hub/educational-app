@@ -8,6 +8,7 @@ import 'screens/home_dashboard.dart';
 import 'package:flutter/foundation.dart';
 import 'providers/auth_state.dart';
 import 'providers/settings_state.dart';
+import 'services/notification_service.dart';
 
 class InitializationErrorScreen extends StatelessWidget {
   final VoidCallback onRetry;
@@ -64,6 +65,16 @@ void main() async {
         print('Firebase initialization error: $e');
         print(st);
       }
+    }
+  }
+
+  // Initialize local notification service once Firebase (and platform) are ready.
+  if (firebaseOk) {
+    try {
+      await NotificationService().init();
+      if (kDebugMode) print('NotificationService initialized');
+    } catch (e) {
+      if (kDebugMode) print('NotificationService init failed: $e');
     }
   }
 

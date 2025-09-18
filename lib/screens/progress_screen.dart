@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../services/firestore_service.dart';
 import '../services/firebase_auth_service.dart';
 
-
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
 
