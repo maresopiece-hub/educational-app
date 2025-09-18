@@ -47,7 +47,6 @@ class DefaultNotificationService implements NotificationService {
       msg,
       scheduled,
       const NotificationDetails(android: android, iOS: ios),
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
       payload: 'nudge',
     );
