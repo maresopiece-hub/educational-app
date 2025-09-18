@@ -33,19 +33,28 @@ class _AuthScreenState extends State<AuthScreen> {
     try {
       final auth = AuthService();
       if (isLogin) {
-        await auth.signInWithEmail(_emailController.text, _passwordController.text);
+        final user = await auth.signInWithEmail(_emailController.text, _passwordController.text);
+        if (user == null) {
+          setState(() { _error = 'Invalid credentials.'; });
+        } else {
+          success = true;
+        }
       } else {
-        await auth.registerWithEmail(_emailController.text, _passwordController.text);
+        final user = await auth.registerWithEmail(_emailController.text, _passwordController.text);
+        if (user == null) {
+          setState(() { _error = 'Sign-up failed. The email may already be registered.'; });
+        } else {
+          success = true;
+        }
       }
-      success = true;
     } catch (e) {
       setState(() { _error = e.toString(); });
     } finally {
       if (mounted) {
         setState(() { _loading = false; });
-        if (success) {
-          navigator.pushReplacementNamed('/');
-        }
+          if (success) {
+            navigator.pushReplacementNamed('/home');
+          }
       }
     }
   }
@@ -110,7 +119,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 _loading = false;
                               });
                               if (success) {
-                                navigator.pushReplacementNamed('/');
+                                navigator.pushReplacementNamed('/home');
                               }
                             }
                           }

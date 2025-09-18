@@ -12,18 +12,42 @@ class AuthService {
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   Future<User?> signInWithEmail(String email, String password) async {
-    final result = await _auth.signInWithEmailAndPassword(email: email, password: password);
-    return result.user;
+    try {
+      final result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      return result.user;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password' || e.code == 'user-not-found') {
+        // Known auth errors that the UI can interpret as invalid credentials.
+        print('Auth sign-in failed: ${e.code} - ${e.message}');
+      } else {
+        print('Auth sign-in error: ${e.code} - ${e.message}');
+      }
+      return null;
+    }
   }
 
   Future<User?> registerWithEmail(String email, String password) async {
-    final result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-    // Create user profile in Firestore
-    await _db.collection('users').doc(result.user!.uid).set({
-      'email': email,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-    return result.user;
+    try {
+      final result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      // Create user profile in Firestore
+      await _db.collection('users').doc(result.user!.uid).set({
+        'email': email,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return result.user;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        print('Email is already registered. Try logging in.');
+      } else {
+        print('Auth register error: ${e.code} - ${e.message}');
+      }
+      return null;
+    }
+  }
+
+  /// Alias for registerWithEmail to match alternative naming in other code/snippets.
+  Future<User?> signUpWithEmail(String email, String password) async {
+    return registerWithEmail(email, password);
   }
 
   Future<void> sendPasswordResetEmail(String email) async {

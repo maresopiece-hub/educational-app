@@ -37,6 +37,13 @@
             {
               "client_id": "445070976852-4k2g1ma6tt3hnp6o62im1fig2sgh55u0.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "445070976852-m8eo7pn6jc7amm680qld1otnq1ct3k6o.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.grade12ExamPrepTutor"
+              }
             }
           ]
         }

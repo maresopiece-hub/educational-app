@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local Firebase configuration (generated)
+/lib/firebase_options.dart
+/android/app/google-services.json
