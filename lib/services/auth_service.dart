@@ -1,10 +1,34 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  User? get currentUser => _auth.currentUser;
+
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  Future<User?> signInWithEmail(String email, String password) async {
+    final result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+    return result.user;
+  }
+
+  Future<User?> registerWithEmail(String email, String password) async {
+    final result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+    // Create user profile in Firestore
+    await _db.collection('users').doc(result.user!.uid).set({
+      'email': email,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    return result.user;
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
 
   Future<User?> signInWithGoogle() async {
     if (!(kIsWeb || Platform.isAndroid || Platform.isIOS)) {
@@ -14,37 +38,7 @@ class AuthService {
     throw UnimplementedError('Google sign-in must be implemented for supported platforms.');
   }
 
-  Future<User?> signInWithEmail(String email, String password) async {
-    final userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
-    await _persistUser(userCredential.user);
-    return userCredential.user;
-  }
-
-  Future<User?> signUpWithEmail(String email, String password, String name) async {
-    final userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-    await userCredential.user?.updateDisplayName(name);
-    await _persistUser(userCredential.user);
-    return userCredential.user;
-  }
-
   Future<void> signOut() async {
     await _auth.signOut();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
   }
-
-  Future<void> sendPasswordResetEmail(String email) async {
-    await _auth.sendPasswordResetEmail(email: email);
-  }
-
-  Future<void> _persistUser(User? user) async {
-    if (user == null) return;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_id', user.uid);
-    await prefs.setString('user_email', user.email ?? '');
-    await prefs.setString('user_name', user.displayName ?? '');
-    await prefs.setString('user_avatar', user.photoURL ?? '');
-  }
-
-  User? get currentUser => _auth.currentUser;
 }

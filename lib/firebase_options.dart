@@ -1,7 +1,10 @@
-// Generated placeholder for Firebase options.
-// Replace the placeholder values with real values from your Firebase project
-// (use the FlutterFire CLI: `flutterfire configure` or the Firebase console to get
-// the correct apiKey, appId, projectId, etc.).
+// Placeholder Firebase options. Replace these values by running
+// `flutterfire configure` or copying the generated `DefaultFirebaseOptions`
+// from the FlutterFire CLI. This file is intentionally a placeholder so
+// the app compiles and the guarded initialization in `main.dart` can import
+// this symbol. Replace all `REPLACE_WITH_*` values with your project's
+// configuration.
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
 

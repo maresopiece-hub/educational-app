@@ -13,8 +13,10 @@ buildscript {
         mavenCentral()
     }
     dependencies {
+        // Android Gradle plugin - ensure a reasonably recent version
+        classpath("com.android.tools.build:gradle:8.1.0")
         // Google Services Gradle plugin used to process android/app/google-services.json
-        classpath("com.google.gms:google-services:4.4.3")
+        classpath("com.google.gms:google-services:4.4.2")
     }
 }
 
