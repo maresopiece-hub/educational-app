@@ -17,30 +17,33 @@ class StudyPlanAdapter extends TypeAdapter<StudyPlan> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return StudyPlan(
-      topic: fields[0] as String,
-      subtopics: (fields[1] as List?)?.cast<String>(),
-      explanations: (fields[2] as List?)?.cast<String>(),
-      notes: (fields[3] as List?)?.cast<String>(),
-      questions: (fields[4] as List?)?.cast<String>(),
-      flashcards: (fields[5] as List?)?.cast<Flashcard>(),
+      topic: fields[1] as String,
+      subject: fields[0] as String?,
+      subtopics: (fields[2] as List?)?.cast<Subtopic>(),
+      explanations: (fields[3] as List?)?.cast<String>(),
+      notes: (fields[4] as List?)?.cast<String>(),
+      questions: (fields[5] as List?)?.cast<String>(),
+      flashcards: (fields[6] as List?)?.cast<Flashcard>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, StudyPlan obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
-      ..write(obj.topic)
+      ..write(obj.subject)
       ..writeByte(1)
-      ..write(obj.subtopics)
+      ..write(obj.topic)
       ..writeByte(2)
-      ..write(obj.explanations)
+      ..write(obj.subtopics)
       ..writeByte(3)
-      ..write(obj.notes)
+      ..write(obj.explanations)
       ..writeByte(4)
-      ..write(obj.questions)
+      ..write(obj.notes)
       ..writeByte(5)
+      ..write(obj.questions)
+      ..writeByte(6)
       ..write(obj.flashcards);
   }
 
@@ -51,6 +54,52 @@ class StudyPlanAdapter extends TypeAdapter<StudyPlan> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is StudyPlanAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class SubtopicAdapter extends TypeAdapter<Subtopic> {
+  @override
+  final int typeId = 2;
+
+  @override
+  Subtopic read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return Subtopic(
+      title: fields[0] as String,
+      explanations: (fields[1] as List?)?.cast<String>(),
+      notes: (fields[2] as List?)?.cast<String>(),
+      questions: (fields[3] as List?)?.cast<String>(),
+      flashcards: (fields[4] as List?)?.cast<Flashcard>(),
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Subtopic obj) {
+    writer
+      ..writeByte(5)
+      ..writeByte(0)
+      ..write(obj.title)
+      ..writeByte(1)
+      ..write(obj.explanations)
+      ..writeByte(2)
+      ..write(obj.notes)
+      ..writeByte(3)
+      ..write(obj.questions)
+      ..writeByte(4)
+      ..write(obj.flashcards);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SubtopicAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

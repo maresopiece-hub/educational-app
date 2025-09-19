@@ -12,11 +12,12 @@ class LessonPlanGenerator {
 
     for (final sec in candidates.take(10)) {
       final topic = _extractTopic(sec);
-      final subtopics = _extractSubtopics(sec);
+  final subtopicStrings = _extractSubtopics(sec);
+  final subtopics = subtopicStrings.map((s) => Subtopic(title: s)).toList();
       final explanations = _extractExplanations(sec);
       final notes = _extractNotes(sec);
       final questions = _generateQuestions(sec);
-      final flashcards = _generateFlashcards(subtopics, explanations);
+  final flashcards = _generateFlashcards(subtopics, explanations);
 
       plans.add(StudyPlan(
         topic: topic,
@@ -108,23 +109,23 @@ class LessonPlanGenerator {
     final questions = <String>[];
     for (final s in sentences.take(5)) {
       // naive transforms: 'X is Y.' -> 'What is X?'
-  final m = RegExp(r'^(.*?)\s+is\s+(.*?)[.?!]?\u0000*', dotAll: true).firstMatch(s + '\u0000');
+  final m = RegExp(r'^(.*?)\s+is\s+(.*?)[.?!]?\u0000*', dotAll: true).firstMatch('$s\u0000');
       if (m != null) {
         final subject = m.group(1)!.trim();
   questions.add('What is $subject?');
       } else {
         // fallback: convert final '.' to '?'
-  questions.add(s.replaceAll(RegExp(r'[.?!]$'), '?'));
+        questions.add(s.replaceAll(RegExp(r'[.?!]$'), '?'));
       }
     }
     return questions;
   }
 
-  static List<Flashcard> _generateFlashcards(List<String> subs, List<String> expl) {
+  static List<Flashcard> _generateFlashcards(List<Subtopic> subs, List<String> expl) {
     final cards = <Flashcard>[];
     for (var i = 0; i < subs.length && cards.length < 8; i++) {
-      final front = subs[i];
-      final back = i < expl.length ? (expl[i].length > 200 ? expl[i].substring(0, 200) + '...' : expl[i]) : 'See notes';
+      final front = subs[i].title;
+      final back = i < expl.length ? (expl[i].length > 200 ? '${expl[i].substring(0, 200)}...' : expl[i]) : 'See notes';
       cards.add(Flashcard(front: front, back: back));
     }
     // If no subs, try generate from expl snippets

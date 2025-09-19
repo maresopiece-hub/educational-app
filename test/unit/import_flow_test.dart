@@ -62,17 +62,32 @@ void main() {
 
   tearDownAll(() async {
     final box = Hive.box<StudyPlan>('studyPlans');
-    await box.clear();
-    await box.close();
+    try {
+      await box.clear().timeout(const Duration(seconds: 5));
+    } catch (e) {
+      debugPrint('tearDownAll: box.clear timed out or failed: $e');
+    }
+    try {
+      await box.close().timeout(const Duration(seconds: 5));
+    } catch (e) {
+      debugPrint('tearDownAll: box.close timed out or failed: $e');
+    }
+    try {
+      await Hive.close().timeout(const Duration(seconds: 3));
+    } catch (e) {
+      debugPrint('tearDownAll: Hive.close timed out or failed: $e');
+    }
     try {
       await Directory(tmpPath).delete(recursive: true);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('tearDownAll: temp dir deletion failed: $e');
+    }
   });
 
   testWidgets('import flow persists generated study plans', (tester) async {
     final fakeFile = FakeFilePicker(Uint8List.fromList([1,2,3]), 'test.pdf');
     final fakeParser = FakeParser('topic\nexplanation');
-    final fakePlan = StudyPlan(topic: 'topic', subtopics: ['a'], explanations: ['ex'], notes: [], questions: [], flashcards: []);
+  final fakePlan = StudyPlan(topic: 'topic', subtopics: [Subtopic(title: 'a')], explanations: ['ex'], notes: [], questions: [], flashcards: []);
     final fakeGen = FakeGenerator([fakePlan]);
 
     // Use a fake sync service to avoid real connectivity listeners in tests

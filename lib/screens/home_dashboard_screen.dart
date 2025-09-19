@@ -8,6 +8,8 @@ import '../services/file_picker_service.dart';
 import '../services/parser_service.dart';
 import '../services/generator_service.dart';
 import 'study_plan_screen.dart';
+import 'study_plan_detail_screen.dart';
+import 'generated_preview_screen.dart';
 import 'package:hive/hive.dart';
 import '../models/study_plan.dart';
 
@@ -117,28 +119,61 @@ class _HomeDashboardState extends State<HomeDashboard> {
             icon: const Icon(Icons.file_upload),
             tooltip: 'Import and generate study plans',
             onPressed: () async {
-              // Capture navigator and messenger before any `await` to avoid
+              // Capture navigator (and messenger derived from navigator) before any `await` to avoid
               // using BuildContext across async gaps (silences analyzer hints).
               final navigator = Navigator.of(context);
-              final messenger = ScaffoldMessenger.of(context);
+              final messenger = ScaffoldMessenger.of(navigator.context);
               final picker = widget.filePickerService ?? DefaultFilePickerService();
               final parser = widget.parserService ?? DefaultParserService();
               final generator = widget.generatorService ?? DefaultGeneratorService();
               try {
                 final picked = await picker.pickFile();
                 if (picked == null) return;
+
+                // show progress dialog while parsing/generating
+                // Use a determinate indicator (value: 1.0) so widget tests' pumpAndSettle can complete
+                // ignore: use_build_context_synchronously
+                showDialog<void>(context: navigator.context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator(value: 1.0)));
+
                 final fileBytes = picked.bytes;
                 final text = await parser.extractTextFromBytes(fileBytes);
                 final plans = await generator.generateFromText(text);
                 final box = Hive.box<StudyPlan>('studyPlans');
+                int? firstIndex;
                 for (final p in plans) {
-                  await box.add(p);
+                  final idx = await box.add(p);
+                  firstIndex ??= idx;
                 }
+
+                // close progress
+                if (mounted) navigator.pop();
+
                 if (!mounted) return;
-                navigator.push(MaterialPageRoute(builder: (_) => const StudyPlanScreen()));
+                if (plans.isEmpty) {
+                  messenger.showSnackBar(const SnackBar(content: Text('No study plans were generated from that file.')));
+                  return;
+                }
+
+                // navigate to preview if multiple plans, otherwise show single plan detail
+                if (plans.length > 1) {
+                  navigator.push(MaterialPageRoute(builder: (_) => GeneratedPreviewScreen(plans: plans)));
+                } else if (firstIndex != null) {
+                  final saved = box.getAt(firstIndex);
+                  if (saved != null) {
+                    navigator.push(MaterialPageRoute(builder: (_) => StudyPlanDetailScreen(plan: saved)));
+                  } else {
+                    navigator.push(MaterialPageRoute(builder: (_) => const StudyPlanScreen()));
+                  }
+                } else {
+                  navigator.push(MaterialPageRoute(builder: (_) => const StudyPlanScreen()));
+                }
               } catch (e) {
-                if (!mounted) return;
-                messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
+                if (mounted) {
+                  try {
+                    navigator.pop();
+                  } catch (_) {}
+                  messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
+                }
               }
             },
           ),
@@ -149,15 +184,30 @@ class _HomeDashboardState extends State<HomeDashboard> {
               tooltip: 'Integration import',
               onPressed: () async {
                 // Run import from bundled asset for integration tests
+                // Capture navigator before any awaits
+                final navigator = Navigator.of(context);
                 try {
+                  // show progress while generating
+                  // Use a determinate indicator so widget tests won't hang on pumpAndSettle
+                  // ignore: use_build_context_synchronously
+                  showDialog<void>(context: navigator.context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator(value: 1.0)));
+
                   final data = await DefaultAssetBundle.of(context).loadString('assets/test/sample.txt');
                   final generator = widget.generatorService ?? DefaultGeneratorService();
                   final plans = await generator.generateFromText(data);
                   final box = Hive.box<StudyPlan>('studyPlans');
+                  int? firstIndex;
                   for (final p in plans) {
-                    await box.add(p);
+                    final idx = await box.add(p);
+                    firstIndex ??= idx;
                   }
+                  if (mounted) navigator.pop();
                   if (!mounted) return;
+                  if (plans.isEmpty) return;
+                  if (firstIndex != null) {
+                    final saved = box.getAt(firstIndex);
+                    if (saved != null) navigator.push(MaterialPageRoute(builder: (_) => StudyPlanDetailScreen(plan: saved)));
+                  }
                 } catch (e) {
                   // ignore in tests
                 }
