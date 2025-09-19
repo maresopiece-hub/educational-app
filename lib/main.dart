@@ -14,6 +14,7 @@ import 'screens/public_plans_screen.dart';
 import 'screens/progress_screen.dart';
 import 'screens/settings_screen.dart';
 import 'package:flutter/foundation.dart';
+import 'screens/study_plan_screen.dart';
 import 'providers/auth_state.dart';
 import 'providers/settings_state.dart';
 import 'services/notification_service.dart';
@@ -21,6 +22,7 @@ import 'services/local_sync_service.dart';
 import 'services/firebase_auth_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/study_plan.dart';
+import 'screens/revision_screen.dart';
 
 class InitializationErrorScreen extends StatelessWidget {
   final VoidCallback onRetry;
@@ -58,8 +60,30 @@ void main() async {
   if (!Hive.isAdapterRegistered(0)) Hive.registerAdapter(StudyPlanAdapter());
   if (!Hive.isAdapterRegistered(1)) Hive.registerAdapter(FlashcardAdapter());
   if (!Hive.isAdapterRegistered(2)) Hive.registerAdapter(SubtopicAdapter());
+  if (!Hive.isAdapterRegistered(3)) Hive.registerAdapter(QuestionAdapter());
   // Ensure the box is available early so screens can read/write.
-  await Hive.openBox<StudyPlan>('studyPlans');
+  // Wrap openBox in try/catch to handle on-disk schema mismatches that can
+  // occur after changing model types (for example when Subtopic replaced
+  // a previous List<String> representation). If opening fails with a
+  // type/cast error, delete the box from disk and recreate it so the app
+  // can start. This is a safe unblock for development; a proper
+  // migration should be implemented to preserve user data.
+  try {
+    await Hive.openBox<StudyPlan>('studyPlans');
+  } catch (e, st) {
+    if (kDebugMode) {
+      print('Failed to open studyPlans box: $e');
+      print(st);
+      print('Attempting to delete corrupted box and recreate (data loss!).');
+    }
+    try {
+      await Hive.deleteBoxFromDisk('studyPlans');
+    } catch (delErr) {
+      if (kDebugMode) print('Failed to delete studyPlans box: $delErr');
+    }
+    // Try opening again (will create an empty box).
+    await Hive.openBox<StudyPlan>('studyPlans');
+  }
   bool firebaseOk = false;
   try {
     // Prevent duplicate initialization (fires on hot restart or if another
@@ -180,7 +204,8 @@ class MyApp extends StatelessWidget {
           '/public-plans': (context) => const PublicPlansScreen(),
           '/progress': (context) => const ProgressScreen(),
           '/settings': (context) => const SettingsScreen(),
-          '/study-plan': (context) => const SizedBox.shrink(), // placeholder route for deep linking
+          '/study-plan': (context) => const StudyPlanScreen(),
+          '/revision': (context) => const RevisionScreen(),
         },
       ),
     );

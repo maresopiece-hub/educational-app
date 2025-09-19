@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../models/study_plan.dart';
+import 'subtopic_detail_screen.dart';
+import 'study_mode_screen.dart';
 
 class StudyPlanDetailScreen extends StatefulWidget {
   final StudyPlan plan;
@@ -89,10 +91,18 @@ class _StudyPlanDetailScreenState extends State<StudyPlanDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(plan.topic), actions: [
+  appBar: AppBar(title: Row(children: [Expanded(child: Text(plan.topic)), IconButton(onPressed: () async { final controller = TextEditingController(); final res = await showDialog<String?>(context: context, builder: (_) => AlertDialog(title: const Text('Add subtopic'), content: TextField(controller: controller), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Add'))])); if (res == null || res.trim().isEmpty) return; setState(() => plan.subtopics.add(Subtopic(title: res.trim()))); try { await plan.save(); } catch (_) {} }, icon: const Icon(Icons.add))]), actions: [
         IconButton(onPressed: _exportJson, icon: const Icon(Icons.share)),
         IconButton(onPressed: _editTitle, icon: const Icon(Icons.edit)),
+        IconButton(onPressed: () async {
+          final sel = await showDialog<String?>(context: context, builder: (_) => SimpleDialog(title: const Text('Default question type'), children: [SimpleDialogOption(onPressed: () => Navigator.pop(context, 'mcq'), child: const Text('Multiple choice (mcq)')), SimpleDialogOption(onPressed: () => Navigator.pop(context, 'tf'), child: const Text('True / False (tf)')), SimpleDialogOption(onPressed: () => Navigator.pop(context, 'fill'), child: const Text('Fill in the blank (fill)')), SimpleDialogOption(onPressed: () => Navigator.pop(context, 'essay'), child: const Text('Explain (essay)'))]));
+          if (sel != null && sel.isNotEmpty) {
+            setState(() => plan.defaultQuestionType = sel);
+            try { await plan.save(); } catch (_) {}
+          }
+        }, icon: const Icon(Icons.settings)) ,
         IconButton(onPressed: _confirmDelete, icon: const Icon(Icons.delete)),
+        IconButton(onPressed: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => StudyModeScreen(plan: plan))); setState(() {}); }, icon: const Icon(Icons.school)),
       ]),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -100,6 +110,42 @@ class _StudyPlanDetailScreenState extends State<StudyPlanDetailScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(plan.topic, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
+            // Subtopics (nested)
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Text('Subtopics', style: TextStyle(fontWeight: FontWeight.bold)),
+              IconButton(onPressed: () async {
+                final controller = TextEditingController();
+                final kind = await showDialog<String?>(context: context, builder: (_) => SimpleDialog(title: const Text('Create subtopic with'), children: [SimpleDialogOption(onPressed: () => Navigator.pop(context, 'explanation'), child: const Text('Explanation')), SimpleDialogOption(onPressed: () => Navigator.pop(context, 'note'), child: const Text('Note')), SimpleDialogOption(onPressed: () => Navigator.pop(context, 'question'), child: const Text('Question')), SimpleDialogOption(onPressed: () => Navigator.pop(context, 'flashcard'), child: const Text('Flashcard')), SimpleDialogOption(onPressed: () => Navigator.pop(context, 'none'), child: const Text('None'))]));
+                final res = await showDialog<String?>(context: context, builder: (_) => AlertDialog(title: const Text('Add subtopic'), content: TextField(controller: controller), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Add'))]));
+                if (res == null || res.trim().isEmpty) return;
+                // enforce max depth of 10: top-level plan has depth 1
+                setState(() {
+                  final st = Subtopic(title: res.trim());
+                  if (kind == 'explanation') st.explanations.add('');
+                  if (kind == 'note') st.notes.add('');
+                  if (kind == 'question') st.questions.add(Question(type: plan.defaultQuestionType, prompt: ''));
+                  if (kind == 'flashcard') st.flashcards.add(Flashcard(front: '', back: ''));
+                  plan.subtopics.add(st);
+                });
+                try { await plan.save(); } catch (_) {}
+              }, icon: const Icon(Icons.add))
+            ]),
+            if (plan.subtopics.isEmpty)
+              const Text('No subtopics yet', style: TextStyle(color: Colors.grey))
+            else ...[
+              const SizedBox(height: 8),
+              ...plan.subtopics.map((st) => ExpansionTile(
+                    title: Text(st.title),
+                    children: [
+                      ListTile(title: Text('${st.explanations.length} explanations')),
+                      ListTile(title: Text('${st.notes.length} notes')),
+                      ListTile(title: Text('${st.flashcards.length} flashcards')),
+                      ListTile(title: Text('${st.questions.length} questions')),
+                      ButtonBar(children: [TextButton(onPressed: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => SubtopicDetailScreen(plan: plan, path: [st]))); setState(() {}); }, child: const Text('Open')), TextButton(onPressed: () async { final controller = TextEditingController(text: st.title); final res = await showDialog<String?>(context: context, builder: (_) => AlertDialog(title: const Text('Edit subtopic title'), content: TextField(controller: controller), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Save'))])); if (res != null && res.trim().isNotEmpty) { setState(() => st.title = res.trim()); try { await plan.save(); } catch (_) {} } }, child: const Text('Edit'))]),
+                    ],
+                  )).toList(),
+              const SizedBox(height: 12),
+            ],
             // Explanations section with add button
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               const Text('Explanations', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -207,7 +253,7 @@ class _StudyPlanDetailScreenState extends State<StudyPlanDetailScreen> {
               const Text('No questions yet', style: TextStyle(color: Colors.grey))
             else ...[
               const SizedBox(height: 8),
-              ReorderableListView(
+                ReorderableListView(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 onReorder: (oldIndex, newIndex) async {
@@ -218,31 +264,32 @@ class _StudyPlanDetailScreenState extends State<StudyPlanDetailScreen> {
                   });
                   try { await plan.save(); } catch (_) {}
                 },
-                children: plan.questions.asMap().entries.map((e) {
-                  final idx = e.key;
-                  final text = e.value;
-                  return ListTile(
-                    key: ValueKey('q_$idx'),
-                    title: Text(text),
-                    trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                      IconButton(icon: const Icon(Icons.edit), onPressed: () async {
-                        final controller = TextEditingController(text: text);
-                        final res = await showDialog<String?>(context: context, builder: (_) => AlertDialog(title: const Text('Edit question'), content: TextField(controller: controller, maxLines: 4), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Save'))]));
-                        if (res == null || res.trim().isEmpty) return;
-                        setState(() => plan.questions[idx] = res.trim());
-                        try { await plan.save(); } catch (_) {}
-                      }),
-                      IconButton(icon: const Icon(Icons.delete), onPressed: () async {
-                        final messenger = ScaffoldMessenger.of(context);
-                        final removed = plan.questions.removeAt(idx);
-                        setState(() {});
-                        try { await plan.save(); } catch (_) {}
-                        if (!mounted) return;
-                        messenger.showSnackBar(SnackBar(content: const Text('Question deleted'), action: SnackBarAction(label: 'Undo', onPressed: () async { setState(() => plan.questions.insert(idx, removed)); try { await plan.save(); } catch (_) {} })));
-                      })
-                    ]),
-                  );
-                }).toList(),
+                  children: plan.questions.asMap().entries.map((e) {
+                    final idx = e.key;
+                    final q = e.value;
+                    return ListTile(
+                      key: ValueKey('q_$idx'),
+                      title: Text(q.prompt),
+                      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                        IconButton(icon: const Icon(Icons.edit), onPressed: () async {
+                          final controller = TextEditingController(text: q.prompt);
+                          final typeCtrl = TextEditingController(text: q.type);
+                          final res = await showDialog<Question?>(context: context, builder: (_) => AlertDialog(title: const Text('Edit question'), content: Column(mainAxisSize: MainAxisSize.min, children: [TextField(controller: controller, maxLines: 4, decoration: const InputDecoration(labelText: 'Prompt')), TextField(controller: typeCtrl, decoration: const InputDecoration(labelText: 'Type (mcq|tf|fill|essay)'))]), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, Question(type: typeCtrl.text.trim().isEmpty ? q.type : typeCtrl.text.trim(), prompt: controller.text.trim(), choices: q.choices, answer: q.answer, explanation: q.explanation)), child: const Text('Save'))]));
+                          if (res == null) return;
+                          setState(() => plan.questions[idx] = res);
+                          try { await plan.save(); } catch (_) {}
+                        }),
+                        IconButton(icon: const Icon(Icons.delete), onPressed: () async {
+                          final messenger = ScaffoldMessenger.of(context);
+                          final removed = plan.questions.removeAt(idx);
+                          setState(() {});
+                          try { await plan.save(); } catch (_) {}
+                          if (!mounted) return;
+                          messenger.showSnackBar(SnackBar(content: const Text('Question deleted'), action: SnackBarAction(label: 'Undo', onPressed: () async { setState(() => plan.questions.insert(idx, removed)); try { await plan.save(); } catch (_) {} })));
+                        })
+                      ]),
+                    );
+                  }).toList(),
               ),
               const SizedBox(height: 12),
             ],
@@ -322,7 +369,7 @@ class _StudyPlanDetailScreenState extends State<StudyPlanDetailScreen> {
     final controller = TextEditingController();
     final res = await showDialog<String?>(context: context, builder: (_) => AlertDialog(title: const Text('Add question'), content: TextField(controller: controller, maxLines: 4), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Add'))]));
     if (res == null || res.trim().isEmpty) return;
-    setState(() => plan.questions.add(res.trim()));
+    setState(() => plan.questions.add(Question(type: plan.defaultQuestionType, prompt: res.trim())));
     try { await plan.save(); } catch (_) {}
   }
 

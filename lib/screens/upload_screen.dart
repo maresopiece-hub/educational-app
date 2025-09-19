@@ -73,11 +73,9 @@ class _UploadScreenState extends State<UploadScreen> {
       }
       // single plan — show detail
       if (firstIndex != null) {
-        final saved = box.getAt(firstIndex);
-        if (saved != null) {
-          navigator.push(MaterialPageRoute(builder: (_) => StudyPlanDetailScreen(plan: saved)));
-          return;
-        }
+        final saved = box.get(firstIndex) ?? plans.first;
+        navigator.push(MaterialPageRoute(builder: (_) => StudyPlanDetailScreen(plan: saved)));
+        return;
       }
       // fallback to preview of generated plans
       navigator.push(MaterialPageRoute(builder: (_) => GeneratedPreviewScreen(plans: plans)));

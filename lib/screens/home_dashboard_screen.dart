@@ -71,6 +71,13 @@ class _HomeDashboardState extends State<HomeDashboard> {
               onTap: () => Navigator.pushNamed(context, '/progress'),
             ),
           ),
+          Card(
+            child: ListTile(
+              title: const Text('Revision'),
+              subtitle: const Text('Study weakest topics based on your past answers'),
+              onTap: () => Navigator.pushNamed(context, '/revision'),
+            ),
+          ),
           if (_pending > 0)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -88,6 +95,13 @@ class _HomeDashboardState extends State<HomeDashboard> {
               title: const Text('Create Plan'),
               subtitle: const Text('Build a custom study plan'),
               onTap: () => Navigator.pushNamed(context, '/plan-builder'),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              title: const Text('Your Study Plans'),
+              subtitle: const Text('View plans you have created locally'),
+              onTap: () => Navigator.pushNamed(context, '/study-plan'),
             ),
           ),
         ],
@@ -158,7 +172,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 if (plans.length > 1) {
                   navigator.push(MaterialPageRoute(builder: (_) => GeneratedPreviewScreen(plans: plans)));
                 } else if (firstIndex != null) {
-                  final saved = box.getAt(firstIndex);
+                  final saved = box.get(firstIndex) ?? null;
                   if (saved != null) {
                     navigator.push(MaterialPageRoute(builder: (_) => StudyPlanDetailScreen(plan: saved)));
                   } else {

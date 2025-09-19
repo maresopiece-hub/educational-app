@@ -14,9 +14,9 @@ class LessonPlanGenerator {
       final topic = _extractTopic(sec);
   final subtopicStrings = _extractSubtopics(sec);
   final subtopics = subtopicStrings.map((s) => Subtopic(title: s)).toList();
-      final explanations = _extractExplanations(sec);
-      final notes = _extractNotes(sec);
-      final questions = _generateQuestions(sec);
+  final explanations = _extractExplanations(sec);
+  final notes = _extractNotes(sec);
+  final questions = _generateQuestions(sec);
   final flashcards = _generateFlashcards(subtopics, explanations);
 
       plans.add(StudyPlan(
@@ -99,24 +99,19 @@ class LessonPlanGenerator {
     return notes;
   }
 
-  static List<String> _generateQuestions(String section) {
+  static List<Question> _generateQuestions(String section) {
     final sentences = <String>[];
     final rawSentences = section.split(RegExp(r'(?<=[.?!])\s+'));
     for (final s in rawSentences) {
       final clean = s.trim();
       if (clean.length > 20) sentences.add(clean);
     }
-    final questions = <String>[];
+    final questions = <Question>[];
     for (final s in sentences.take(5)) {
       // naive transforms: 'X is Y.' -> 'What is X?'
-  final m = RegExp(r'^(.*?)\s+is\s+(.*?)[.?!]?\u0000*', dotAll: true).firstMatch('$s\u0000');
-      if (m != null) {
-        final subject = m.group(1)!.trim();
-  questions.add('What is $subject?');
-      } else {
-        // fallback: convert final '.' to '?'
-        questions.add(s.replaceAll(RegExp(r'[.?!]$'), '?'));
-      }
+      final m = RegExp(r'^(.*?)\s+is\s+(.*?)[.?!]?\u0000*', dotAll: true).firstMatch('$s\u0000');
+      final prompt = m != null ? 'What is ${m.group(1)!.trim()}?' : s.replaceAll(RegExp(r'[.?!]$'), '?');
+      questions.add(Question(type: 'mcq', prompt: prompt));
     }
     return questions;
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:hive/hive.dart';
 import '../models/study_plan.dart';
 import 'study_plan_detail_screen.dart';
@@ -32,8 +31,12 @@ class _PlanBuilderScreenState extends State<PlanBuilderScreen> {
     final topic = _titleController.text.trim();
     final plan = StudyPlan(topic: topic, subject: _selectedSubject ?? 'General');
     final box = Hive.box<StudyPlan>('studyPlans');
-    final idx = await box.add(plan);
-    final saved = box.getAt(idx)!;
+    // Hive.box.add returns the key for the stored value. Use box.get(key)
+    // rather than getAt(index) because keys and positional indices can differ
+    // (sparse keys or deleted entries). getAt expects a positional index
+    // and will throw if the index is out of range.
+  final key = await box.add(plan);
+  final saved = box.get(key) ?? plan;
     if (!mounted) return;
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => StudyPlanDetailScreen(plan: saved)));
   }
@@ -47,19 +50,39 @@ class _PlanBuilderScreenState extends State<PlanBuilderScreen> {
         child: Form(
           key: _formKey,
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            TypeAheadFormField<String>(
-              textFieldConfiguration: TextFieldConfiguration(
-                decoration: const InputDecoration(labelText: 'Subject (type or pick)'),
-                controller: TextEditingController(text: _selectedSubject),
-                onChanged: (v) => _selectedSubject = v,
-              ),
-              suggestionsCallback: (pattern) {
-                final p = pattern.toLowerCase();
-                return _allSubjects.where((s) => s.toLowerCase().contains(p)).toList();
+            // simple Autocomplete to pick or type subject
+            Autocomplete<String>(
+              initialValue: TextEditingValue(text: _selectedSubject ?? ''),
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text == '') return const Iterable<String>.empty();
+                final q = textEditingValue.text.toLowerCase();
+                return _allSubjects.where((s) => s.toLowerCase().contains(q));
               },
-              itemBuilder: (context, s) => ListTile(title: Text(s)),
-              onSuggestionSelected: (s) => setState(() => _selectedSubject = s),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Please choose or type a subject' : null,
+              onSelected: (s) => setState(() => _selectedSubject = s),
+              fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                return TextFormField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: const InputDecoration(labelText: 'Subject (type or pick)'),
+                  onChanged: (v) => _selectedSubject = v,
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Please choose or type a subject' : null,
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width - 32,
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        children: options.map((o) => ListTile(title: Text(o), onTap: () => onSelected(o))).toList(),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 12),
             TextFormField(
