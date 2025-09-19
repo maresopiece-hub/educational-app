@@ -4,6 +4,13 @@ import 'progress_screen.dart';
 import 'settings_screen.dart';
 import '../services/local_sync_service.dart';
 import '../services/firebase_auth_service.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import '../utils/file_parser.dart';
+import '../utils/lesson_plan_generator.dart';
+import 'study_plan_screen.dart';
+import 'package:hive/hive.dart';
+import '../models/study_plan.dart';
 
 class HomeDashboard extends StatefulWidget {
   /// Optional testUserId helps widget tests avoid depending on Firebase Auth.
@@ -103,6 +110,33 @@ class _HomeDashboardState extends State<HomeDashboard> {
       appBar: AppBar(
         title: const Text('Home'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.file_upload),
+            tooltip: 'Import and generate study plans',
+            onPressed: () async {
+              try {
+                final result = await FilePicker.platform.pickFiles(withData: true, allowedExtensions: ['pdf', 'ppt', 'pptx'], type: FileType.custom);
+                if (result == null || result.files.isEmpty) return;
+                final fileBytes = result.files.first.bytes;
+                final temp = result.files.first.name;
+                final dir = Directory.systemTemp;
+                final f = File('${dir.path}/$temp');
+                await f.writeAsBytes(fileBytes!);
+                final text = await FileParser.extractText(f);
+                final plans = await LessonPlanGenerator.generateFromText(text);
+                final box = Hive.box<StudyPlan>('studyPlans');
+                for (final p in plans) {
+                  await box.add(p);
+                }
+                // Use local context reference after async work to avoid sync warnings.
+                if (!mounted) return;
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const StudyPlanScreen()));
+              } catch (e) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Import failed: $e')));
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.sync),
             tooltip: 'Sync Now',

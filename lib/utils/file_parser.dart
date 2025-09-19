@@ -33,10 +33,10 @@ class FileParser {
               final xml = XmlDocument.parse(utf8.decode(ent.content as List<int>));
               final texts = <String>[];
               for (final node in xml.findAllElements('a:t')) {
-                texts.add(node.text);
+                texts.add(node.innerText);
               }
               for (final node in xml.findAllElements('p:t')) {
-                texts.add(node.text);
+                texts.add(node.innerText);
               }
               buffer.writeln(texts.join('\n'));
             } catch (_) {}
