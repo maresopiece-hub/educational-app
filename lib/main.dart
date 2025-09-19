@@ -179,6 +179,7 @@ class MyApp extends StatelessWidget {
           '/public-plans': (context) => const PublicPlansScreen(),
           '/progress': (context) => const ProgressScreen(),
           '/settings': (context) => const SettingsScreen(),
+          '/study-plan': (context) => const SizedBox.shrink(), // placeholder route for deep linking
         },
       ),
     );

@@ -4,10 +4,9 @@ import 'progress_screen.dart';
 import 'settings_screen.dart';
 import '../services/local_sync_service.dart';
 import '../services/firebase_auth_service.dart';
-import 'dart:io';
-import 'package:file_picker/file_picker.dart';
-import '../utils/file_parser.dart';
-import '../utils/lesson_plan_generator.dart';
+import '../services/file_picker_service.dart';
+import '../services/parser_service.dart';
+import '../services/generator_service.dart';
 import 'study_plan_screen.dart';
 import 'package:hive/hive.dart';
 import '../models/study_plan.dart';
@@ -16,7 +15,10 @@ class HomeDashboard extends StatefulWidget {
   /// Optional testUserId helps widget tests avoid depending on Firebase Auth.
   final String? testUserId;
   final LocalSyncService? syncService;
-  const HomeDashboard({super.key, this.testUserId, this.syncService});
+  final FilePickerService? filePickerService;
+  final ParserService? parserService;
+  final GeneratorService? generatorService;
+  const HomeDashboard({super.key, this.testUserId, this.syncService, this.filePickerService, this.parserService, this.generatorService});
 
   @override
   State<HomeDashboard> createState() => _HomeDashboardState();
@@ -52,6 +54,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    const useAssetImport = bool.fromEnvironment('USE_ASSET_IMPORT', defaultValue: false);
     final dashboardTab = Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -114,29 +117,52 @@ class _HomeDashboardState extends State<HomeDashboard> {
             icon: const Icon(Icons.file_upload),
             tooltip: 'Import and generate study plans',
             onPressed: () async {
+              // Capture navigator and messenger before any `await` to avoid
+              // using BuildContext across async gaps (silences analyzer hints).
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              final picker = widget.filePickerService ?? DefaultFilePickerService();
+              final parser = widget.parserService ?? DefaultParserService();
+              final generator = widget.generatorService ?? DefaultGeneratorService();
               try {
-                final result = await FilePicker.platform.pickFiles(withData: true, allowedExtensions: ['pdf', 'ppt', 'pptx'], type: FileType.custom);
-                if (result == null || result.files.isEmpty) return;
-                final fileBytes = result.files.first.bytes;
-                final temp = result.files.first.name;
-                final dir = Directory.systemTemp;
-                final f = File('${dir.path}/$temp');
-                await f.writeAsBytes(fileBytes!);
-                final text = await FileParser.extractText(f);
-                final plans = await LessonPlanGenerator.generateFromText(text);
+                final picked = await picker.pickFile();
+                if (picked == null) return;
+                final fileBytes = picked.bytes;
+                final text = await parser.extractTextFromBytes(fileBytes);
+                final plans = await generator.generateFromText(text);
                 final box = Hive.box<StudyPlan>('studyPlans');
                 for (final p in plans) {
                   await box.add(p);
                 }
-                // Use local context reference after async work to avoid sync warnings.
                 if (!mounted) return;
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const StudyPlanScreen()));
+                navigator.push(MaterialPageRoute(builder: (_) => const StudyPlanScreen()));
               } catch (e) {
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Import failed: $e')));
+                messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
               }
             },
           ),
+          if (useAssetImport)
+            IconButton(
+              key: const Key('integration_import_button'),
+              icon: const Icon(Icons.bug_report),
+              tooltip: 'Integration import',
+              onPressed: () async {
+                // Run import from bundled asset for integration tests
+                try {
+                  final data = await DefaultAssetBundle.of(context).loadString('assets/test/sample.txt');
+                  final generator = widget.generatorService ?? DefaultGeneratorService();
+                  final plans = await generator.generateFromText(data);
+                  final box = Hive.box<StudyPlan>('studyPlans');
+                  for (final p in plans) {
+                    await box.add(p);
+                  }
+                  if (!mounted) return;
+                } catch (e) {
+                  // ignore in tests
+                }
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.sync),
             tooltip: 'Sync Now',
@@ -175,3 +201,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
     );
   }
 }
+
+// Debug helper: if the app is started with --dart-define=USE_ASSET_IMPORT=true
+// the HomeDashboard will show a hidden import button for integration tests.
+// This keeps test-only code out of normal flows.

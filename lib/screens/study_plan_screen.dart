@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/study_plan.dart';
+import 'study_plan_detail_screen.dart';
 
 class StudyPlanScreen extends StatelessWidget {
   const StudyPlanScreen({super.key});
@@ -21,31 +22,7 @@ class StudyPlanScreen extends StatelessWidget {
               return ListTile(
                 title: Text(p.topic),
                 subtitle: Text('${p.subtopics.length} subtopics • ${p.flashcards.length} flashcards'),
-                onTap: () => showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: Text(p.topic),
-                    content: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (p.explanations.isNotEmpty) ...[
-                            const Text('Explanations', style: TextStyle(fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 8),
-                            Text(p.explanations.join('\n\n')),
-                            const SizedBox(height: 12),
-                          ],
-                          if (p.flashcards.isNotEmpty) ...[
-                            const Text('Flashcards', style: TextStyle(fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 8),
-                            ...p.flashcards.map((f) => ListTile(title: Text(f.front), subtitle: Text(f.back))),
-                          ],
-                        ],
-                      ),
-                    ),
-                    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
-                  ),
-                ),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => StudyPlanDetailScreen(plan: p))),
               );
             },
           );
