@@ -23,6 +23,7 @@ import 'services/firebase_auth_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/study_plan.dart';
 import 'screens/revision_screen.dart';
+import 'utils/migration_runner.dart';
 
 class InitializationErrorScreen extends StatelessWidget {
   final VoidCallback onRetry;
@@ -63,26 +64,40 @@ void main() async {
   if (!Hive.isAdapterRegistered(3)) Hive.registerAdapter(QuestionAdapter());
   // Ensure the box is available early so screens can read/write.
   // Wrap openBox in try/catch to handle on-disk schema mismatches that can
-  // occur after changing model types (for example when Subtopic replaced
-  // a previous List<String> representation). If opening fails with a
-  // type/cast error, delete the box from disk and recreate it so the app
-  // can start. This is a safe unblock for development; a proper
-  // migration should be implemented to preserve user data.
+  // occur after changing model types. Instead of deleting the box (which
+  // causes data loss), open the box and run a non-destructive migration
+  // to convert legacy shapes into the current models.
   try {
     await Hive.openBox<StudyPlan>('studyPlans');
+    // Run migration to convert legacy data shapes in-place.
+    try {
+      await MigrationRunner.migrateStudyPlans();
+      if (kDebugMode) print('MigrationRunner completed');
+    } catch (migErr) {
+      if (kDebugMode) print('MigrationRunner failed: $migErr');
+    }
   } catch (e, st) {
+    // If the box cannot be opened (corrupt on-disk format or other IO issue),
+    // avoid deleting user data. Show an initialization error so the user can
+    // retry or recover the device manually.
     if (kDebugMode) {
       print('Failed to open studyPlans box: $e');
       print(st);
-      print('Attempting to delete corrupted box and recreate (data loss!).');
     }
-    try {
-      await Hive.deleteBoxFromDisk('studyPlans');
-    } catch (delErr) {
-      if (kDebugMode) print('Failed to delete studyPlans box: $delErr');
-    }
-    // Try opening again (will create an empty box).
-    await Hive.openBox<StudyPlan>('studyPlans');
+    runApp(InitializationErrorScreen(onRetry: () async {
+      // allow manual retry; attempt to re-run main initialization
+      try {
+        await Hive.openBox<StudyPlan>('studyPlans');
+        await MigrationRunner.migrateStudyPlans();
+        // if successful, restart the app normally. Mark firebaseOk true here
+        // so the app uses the Firebase-authenticated flow; if Firebase isn't
+        // initialized yet it will handle initialization as before.
+        runApp(const MyApp(firebaseOk: true));
+      } catch (retryErr) {
+        if (kDebugMode) print('Retry failed to open studyPlans box: $retryErr');
+      }
+    }));
+    return;
   }
   bool firebaseOk = false;
   try {

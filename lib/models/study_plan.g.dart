@@ -6,143 +6,6 @@ part of 'study_plan.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class StudyPlanAdapter extends TypeAdapter<StudyPlan> {
-  @override
-  final int typeId = 0;
-
-  @override
-  StudyPlan read(BinaryReader reader) {
-    final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
-    // Defensive deserialization: the on-disk layout may be from an older
-    // version where field ids or types differed. Instead of trusting the
-    // numeric fields strictly, probe `fields` for likely values.
-
-    // Helper to get a String-valued field, falling back to searching values.
-    String _stringFieldOrFirstString(int key, String fallback) {
-      final v = fields[key];
-      if (v is String) return v;
-      for (final val in fields.values) {
-        if (val is String) return val;
-      }
-      return fallback;
-    }
-
-    // Helper to get an optional String (subject).
-    String? _optionalStringField(int key) {
-      final v = fields[key];
-      if (v == null) return null;
-      if (v is String) return v;
-      return null;
-    }
-
-    // Detect raw subtopics: either at the expected key or anywhere in the
-    // fields map as a List whose elements are strings or subtopic-like.
-    dynamic _findRawSubtopics() {
-      final candidate = fields[2];
-      if (candidate != null) return candidate;
-      for (final val in fields.values) {
-        if (val is List) return val;
-      }
-      return null;
-    }
-
-    // Resolve rawSubtopics into List<Subtopic> safely.
-    List<Subtopic>? _coerceSubtopics(dynamic raw) {
-      if (raw == null) return <Subtopic>[];
-      if (raw is List<Subtopic>) return raw;
-      if (raw is List) {
-        try {
-          return raw.map<Subtopic>((e) {
-            if (e is Subtopic) return e;
-            if (e is String) return Subtopic(title: e);
-            if (e is Map) {
-              return Subtopic(
-                title: (e['title'] ?? '') as String,
-                explanations: (e['explanations'] as List?)?.cast<String>() ?? <String>[],
-                notes: (e['notes'] as List?)?.cast<String>() ?? <String>[],
-                questions: (e['questions'] as List?)?.map<Question>((qq) {
-                      if (qq is Question) return qq;
-                      if (qq is String) return Question(type: 'mcq', prompt: qq);
-                      if (qq is Map) return Question.fromJson(Map<String, dynamic>.from(qq));
-                      return Question(type: 'mcq', prompt: qq?.toString() ?? '');
-                    }).toList() ?? <Question>[],
-                flashcards: (e['flashcards'] as List?)?.cast<Flashcard>() ?? <Flashcard>[],
-              );
-            }
-            return Subtopic(title: e?.toString() ?? '');
-          }).toList();
-        } catch (err) {
-          return <Subtopic>[];
-        }
-      }
-      return <Subtopic>[];
-    }
-
-    final topic = _stringFieldOrFirstString(1, 'Untitled');
-    final subject = _optionalStringField(0) ?? 'General';
-    final rawSubtopics = _findRawSubtopics();
-    final subtopics = _coerceSubtopics(rawSubtopics);
-
-    // Other list fields — attempt to cast, but be resilient if they are null.
-    final explanations = (fields[3] as List?)?.cast<String>() ?? <String>[];
-      final notes = (fields[4] as List?)?.cast<String>() ?? <String>[];
-      final questions = (fields[5] as List?)?.cast<Question>() ?? <Question>[];
-      final flashcards = (fields[6] as List?)?.cast<Flashcard>() ?? <Flashcard>[];
-  final completedItems = (fields[7] as Map?)?.cast<String, int>() ?? <String, int>{};
-    final defaultQuestionType = (fields[8] as String?) ?? 'mcq';
-
-    return StudyPlan(
-      topic: topic,
-      subject: subject,
-      subtopics: subtopics,
-      explanations: explanations,
-      notes: notes,
-      questions: questions,
-      flashcards: flashcards,
-      completedItems: completedItems,
-      defaultQuestionType: defaultQuestionType,
-    );
-  }
-
-  @override
-  void write(BinaryWriter writer, StudyPlan obj) {
-    writer
-      ..writeByte(9)
-      ..writeByte(0)
-      ..write(obj.subject)
-      ..writeByte(1)
-      ..write(obj.topic)
-      ..writeByte(2)
-      ..write(obj.subtopics)
-      ..writeByte(3)
-      ..write(obj.explanations)
-      ..writeByte(4)
-      ..write(obj.notes)
-      ..writeByte(5)
-      ..write(obj.questions)
-      ..writeByte(6)
-      ..write(obj.flashcards)
-      ..writeByte(7)
-      ..write(obj.completedItems);
-      writer
-      ..writeByte(8)
-      ..write(obj.defaultQuestionType);
-  }
-
-  @override
-  int get hashCode => typeId.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is StudyPlanAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
-}
-
 class QuestionAdapter extends TypeAdapter<Question> {
   @override
   final int typeId = 3;
@@ -150,13 +13,15 @@ class QuestionAdapter extends TypeAdapter<Question> {
   @override
   Question read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{ for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read() };
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
     return Question(
       type: fields[0] as String,
       prompt: fields[1] as String,
-      choices: (fields[2] as List?)?.cast<String>() ?? <String>[],
-      answer: fields[3] as String,
-      explanation: fields[4] as String,
+      choices: (fields[2] as List?)?.cast<String>(),
+      answer: fields[3] as String?,
+      explanation: fields[4] as String?,
     );
   }
 
@@ -180,7 +45,78 @@ class QuestionAdapter extends TypeAdapter<Question> {
   int get hashCode => typeId.hashCode;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is QuestionAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is QuestionAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class StudyPlanAdapter extends TypeAdapter<StudyPlan> {
+  @override
+  final int typeId = 0;
+
+  @override
+  StudyPlan read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return StudyPlan(
+      topic: fields[1] as String,
+      subject: fields[0] as String?,
+      subtopics: (fields[2] as List?)?.cast<Subtopic>(),
+      explanations: (fields[3] as List?)?.cast<String>(),
+      notes: (fields[4] as List?)?.cast<String>(),
+      questions: (fields[5] as List?)?.cast<Question>(),
+      flashcards: (fields[6] as List?)?.cast<Flashcard>(),
+      completedItems: (fields[7] as Map?)?.cast<String, int>(),
+      defaultQuestionType: fields[8] as String?,
+      questionAttempts: (fields[9] as Map?)?.cast<String, int>(),
+      questionCorrect: (fields[10] as Map?)?.cast<String, int>(),
+      favorite: fields[11] as bool?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, StudyPlan obj) {
+    writer
+      ..writeByte(12)
+      ..writeByte(0)
+      ..write(obj.subject)
+      ..writeByte(1)
+      ..write(obj.topic)
+      ..writeByte(2)
+      ..write(obj.subtopics)
+      ..writeByte(3)
+      ..write(obj.explanations)
+      ..writeByte(4)
+      ..write(obj.notes)
+      ..writeByte(5)
+      ..write(obj.questions)
+      ..writeByte(6)
+      ..write(obj.flashcards)
+      ..writeByte(7)
+      ..write(obj.completedItems)
+      ..writeByte(8)
+      ..write(obj.defaultQuestionType)
+      ..writeByte(9)
+      ..write(obj.questionAttempts)
+      ..writeByte(10)
+      ..write(obj.questionCorrect)
+      ..writeByte(11)
+      ..write(obj.favorite);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is StudyPlanAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }
 
 class SubtopicAdapter extends TypeAdapter<Subtopic> {
@@ -195,11 +131,11 @@ class SubtopicAdapter extends TypeAdapter<Subtopic> {
     };
     return Subtopic(
       title: fields[0] as String,
-      explanations: (fields[1] as List?)?.cast<String>() ?? <String>[],
-      notes: (fields[2] as List?)?.cast<String>() ?? <String>[],
-      questions: _coerceQuestions(fields[3]),
-      flashcards: (fields[4] as List?)?.cast<Flashcard>() ?? <Flashcard>[],
-      subtopics: (fields[5] as List?)?.cast<Subtopic>() ?? <Subtopic>[],
+      explanations: (fields[1] as List?)?.cast<String>(),
+      notes: (fields[2] as List?)?.cast<String>(),
+      questions: (fields[3] as List?)?.cast<Question>(),
+      flashcards: (fields[4] as List?)?.cast<Flashcard>(),
+      subtopics: (fields[5] as List?)?.cast<Subtopic>(),
     );
   }
 
@@ -219,24 +155,6 @@ class SubtopicAdapter extends TypeAdapter<Subtopic> {
       ..write(obj.flashcards)
       ..writeByte(5)
       ..write(obj.subtopics);
-  }
-
-  List<Question> _coerceQuestions(dynamic raw) {
-    if (raw == null) return <Question>[];
-    if (raw is List<Question>) return raw;
-    if (raw is List) {
-      try {
-        return raw.map<Question>((e) {
-          if (e is Question) return e;
-          if (e is String) return Question(type: 'mcq', prompt: e);
-          if (e is Map) return Question.fromJson(Map<String, dynamic>.from(e));
-          return Question(type: 'mcq', prompt: e?.toString() ?? '');
-        }).toList();
-      } catch (_) {
-        return <Question>[];
-      }
-    }
-    return <Question>[];
   }
 
   @override

@@ -112,14 +112,11 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // collapse/expand toggles
-          Row(children: [
+          // collapse/expand toggles — use Wrap to avoid horizontal overflow on narrow screens
+          Wrap(spacing: 8, runSpacing: 4, children: [
             TextButton.icon(onPressed: () => setState(() => _showExplanations = !_showExplanations), icon: Icon(_showExplanations ? Icons.expand_less : Icons.expand_more), label: const Text('Explanations')),
-            const SizedBox(width: 8),
             TextButton.icon(onPressed: () => setState(() => _showNotes = !_showNotes), icon: Icon(_showNotes ? Icons.expand_less : Icons.expand_more), label: const Text('Notes')),
-            const SizedBox(width: 8),
             TextButton.icon(onPressed: () => setState(() => _showFlashcards = !_showFlashcards), icon: Icon(_showFlashcards ? Icons.expand_less : Icons.expand_more), label: const Text('Flashcards')),
-            const SizedBox(width: 8),
             TextButton.icon(onPressed: () => setState(() => _showQuestions = !_showQuestions), icon: Icon(_showQuestions ? Icons.expand_less : Icons.expand_more), label: const Text('Questions')),
           ]),
 
@@ -167,10 +164,42 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
               const SizedBox(height: 8),
               if (!_submitted)
                 ElevatedButton(onPressed: _selectedChoice == null ? null : () => _handleSubmitQuestion(item, q), child: const Text('Submit'))
-              else ...[
-                if (_lastAnswerCorrect) Row(children: [const Icon(Icons.check_circle, color: Colors.green), const SizedBox(width: 8), const Text('Correct', style: TextStyle(color: Colors.green))]),
-                if (!_lastAnswerCorrect) Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [const Icon(Icons.cancel, color: Colors.red), const SizedBox(width: 8), const Text('Incorrect', style: TextStyle(color: Colors.red))]), const SizedBox(height: 8), Text('Answer: ${q.answer}'), if (q.explanation.isNotEmpty) Padding(padding: const EdgeInsets.only(top:8.0), child: Text('Explanation: ${q.explanation}'))])
-              ]
+              else
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  if (_lastAnswerCorrect)
+                    Row(children: [const Icon(Icons.check_circle, color: Colors.green), const SizedBox(width: 8), const Text('Correct', style: TextStyle(color: Colors.green))]),
+                  if (!_lastAnswerCorrect)
+                    Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [const Icon(Icons.cancel, color: Colors.red), const SizedBox(width: 8), const Text('Incorrect', style: TextStyle(color: Colors.red))]),
+                      const SizedBox(height: 8),
+                      Builder(builder: (_) {
+                        // compute and show readable correct answer (letter + text) when possible
+                        String correctLabel = q.answer;
+                        String correctText = q.choices.isNotEmpty ? '' : q.answer;
+                        final ans = q.answer.trim();
+                        if (ans.length == 1 && q.choices.isNotEmpty) {
+                          final idx = 'ABCDEF'.indexOf(ans.toUpperCase());
+                          if (idx >= 0 && idx < q.choices.length) {
+                            correctLabel = ans.toUpperCase();
+                            correctText = q.choices[idx];
+                          }
+                        } else if (q.choices.isNotEmpty) {
+                          // answer might be stored as full choice text
+                          final idx = q.choices.indexWhere((c) => c.trim().toLowerCase() == ans.toLowerCase());
+                          if (idx >= 0) {
+                            correctLabel = String.fromCharCode(65 + idx);
+                            correctText = q.choices[idx];
+                          } else {
+                            correctText = ans;
+                          }
+                        }
+                        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text('Answer: ${correctLabel}${correctText.isNotEmpty ? ' — $correctText' : ''}'),
+                          if (q.explanation.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8.0), child: Text('Explanation: ${q.explanation}'))
+                        ]);
+                      })
+                    ])
+                ]),
             ]),
           );
         }
@@ -184,7 +213,25 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
     setState(() {
       _submitted = true;
       if (q.type == 'mcq' || q.type == 'tf') {
-        _lastAnswerCorrect = (_selectedChoice != null && _selectedChoice == q.answer);
+        // derive selected answer letter (A-F) from the selected choice string
+        String selectedLetter = '';
+        final sel = _selectedChoice?.trim() ?? '';
+        if (sel.isNotEmpty && q.choices.isNotEmpty) {
+          final idx = q.choices.indexWhere((c) => c.trim().toLowerCase() == sel.toLowerCase());
+          if (idx >= 0) selectedLetter = String.fromCharCode(65 + idx); // A, B, C...
+        }
+        // If TF and no choices, allow direct text comparison
+        bool isCorrect = false;
+        final stored = q.answer.trim();
+        if (stored.length == 1) {
+          // stored as letter
+          isCorrect = selectedLetter.isNotEmpty && selectedLetter.toUpperCase() == stored.toUpperCase();
+        } else {
+          // stored as full text (e.g., 'True' or choice text)
+          if (sel.isNotEmpty) isCorrect = sel.toLowerCase() == stored.toLowerCase();
+        }
+        _lastAnswerCorrect = isCorrect;
+
         // record attempt
         final id = item.id;
         widget.plan.questionAttempts[id] = (widget.plan.questionAttempts[id] ?? 0) + 1;
@@ -202,7 +249,6 @@ class _StudyModeScreenState extends State<StudyModeScreen> {
         }
       } else {
         // free-text/essay: reveal suggested answer but do not auto advance
-        // don't mark done automatically; user can press Next to mark
       }
     });
   }

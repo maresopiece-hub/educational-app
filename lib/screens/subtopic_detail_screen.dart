@@ -51,13 +51,37 @@ class _SubtopicDetailScreenState extends State<SubtopicDetailScreen> {
         padding: const EdgeInsets.all(12.0),
         child: SingleChildScrollView(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            ExpansionTile(title: const Text('Explanations', style: TextStyle(fontWeight: FontWeight.bold)), children: current.explanations.map((e) => ListTile(title: Text(e))).toList()),
+            ExpansionTile(
+              title: Row(children: [
+                Expanded(child: Text('Explanations', style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                IconButton(icon: const Icon(Icons.add), onPressed: () => _addItem('explanation')),
+              ]),
+              children: current.explanations.map((e) => ListTile(title: Text(e))).toList(),
+            ),
             const SizedBox(height: 12),
-            ExpansionTile(title: const Text('Notes', style: TextStyle(fontWeight: FontWeight.bold)), children: current.notes.map((n) => ListTile(title: Text(n))).toList()),
+            ExpansionTile(
+              title: Row(children: [
+                Expanded(child: Text('Notes', style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                IconButton(icon: const Icon(Icons.add), onPressed: () => _addItem('note')),
+              ]),
+              children: current.notes.map((n) => ListTile(title: Text(n))).toList(),
+            ),
             const SizedBox(height: 12),
-            ExpansionTile(title: const Text('Questions', style: TextStyle(fontWeight: FontWeight.bold)), children: current.questions.map((q) => ListTile(title: Text(q.prompt))).toList()),
+            ExpansionTile(
+              title: Row(children: [
+                Expanded(child: Text('Questions', style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                IconButton(icon: const Icon(Icons.add), onPressed: () => _addItem('question')),
+              ]),
+              children: current.questions.map((q) => ListTile(title: Text(q.prompt))).toList(),
+            ),
             const SizedBox(height: 12),
-            ExpansionTile(title: const Text('Flashcards', style: TextStyle(fontWeight: FontWeight.bold)), children: current.flashcards.map((f) => ListTile(title: Text(f.front), subtitle: Text(f.back))).toList()),
+            ExpansionTile(
+              title: Row(children: [
+                Expanded(child: Text('Flashcards', style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                IconButton(icon: const Icon(Icons.add), onPressed: () => _addItem('flashcard')),
+              ]),
+              children: current.flashcards.map((f) => ListTile(title: Text(f.front), subtitle: Text(f.back))).toList(),
+            ),
             const SizedBox(height: 12),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text('Subtopics', style: const TextStyle(fontWeight: FontWeight.bold)), IconButton(onPressed: () => _addItem('subtopic'), icon: const Icon(Icons.add))]),
             const SizedBox(height: 8),

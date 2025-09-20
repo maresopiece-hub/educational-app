@@ -57,11 +57,12 @@ class _HomeDashboardState extends State<HomeDashboard> {
   @override
   Widget build(BuildContext context) {
     const useAssetImport = bool.fromEnvironment('USE_ASSET_IMPORT', defaultValue: false);
-    final dashboardTab = Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    final dashboardTab = SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           const Text('Welcome to Grade 12 Exam Prep Tutor', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           Card(
@@ -105,6 +106,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
             ),
           ),
         ],
+        ),
       ),
     );
 
